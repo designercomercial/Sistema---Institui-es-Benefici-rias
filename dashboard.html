@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instituições Beneficiárias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --font-sans: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    /* Moldura / sidebar */
+    --bg-shell: #0d0f33;
+    --fg-sidebar: #e6e8f5;
+    --fg-sidebar-muted: #a3a8c9;
+    --bg-sidebar-active: #4c5bd4;
+    --border-sidebar: #23264d;
+
+    /* Área de conteúdo */
+    --bg-page: #f4f5fd;
+    --bg-card: #f7f8fe;
+    --bg-control: #e4e7f8;
+    --bg-control-disabled: #d7dbf1;
+    --border-default: #d9dcec;
+    --border-strong: #c3c8e3;
+    --fg-strong: #1f2a5c;
+    --fg-default: #2b2f45;
+    --fg-muted: #5b6080;
+    --fg-subtle: #8a8fab;
+    --grid: #e6e8f2;
+
+    /* Status */
+    --fg-success: #16a34a;
+    --fg-warning: #c2410c;
+    --bg-warning: #fde4c8;
+    --fg-danger: #dc2626;
+    --bg-danger: #fde2e2;
+    --fg-info: #2563eb;
+    --bg-info: #dfe8fd;
+    --bg-success: #dcf5e4;
+
+    /* Séries dos gráficos (paleta do modelo) */
+    --chart-1: #ec4899;
+    --chart-2: #be185d;
+    --chart-3: #f472b6;
+    --chart-4: #fbcfe8;
+    --chart-5: #831843;
+    --chart-line-a: #3b82f6;
+    --chart-line-b: #ec4899;
+
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --focus: 0 0 0 3px rgba(76, 91, 212, .45);
+  }
+  :root[data-theme="dark"] {
+    --bg-page: #14173a;
+    --bg-card: #1a1e47;
+    --bg-control: #262b5c;
+    --bg-control-disabled: #20244e;
+    --border-default: #2c3166;
+    --border-strong: #3a4080;
+    --fg-strong: #eef0ff;
+    --fg-default: #d8dbf0;
+    --fg-muted: #a3a8c9;
+    --fg-subtle: #7b80a3;
+    --grid: #282d5e;
+    --fg-success: #4ade80;
+    --fg-warning: #fb923c;
+    --bg-warning: #4a2a14;
+    --fg-danger: #f87171;
+    --bg-danger: #4a1d24;
+    --fg-info: #7aa7ff;
+    --bg-info: #1e2d63;
+    --bg-success: #15372a;
+    --chart-4: #f9a8d4;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg-shell);
+    color: var(--fg-default);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, select { font: inherit; color: inherit; }
+  :focus-visible { outline: none; box-shadow: var(--focus); border-radius: 6px; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    color: var(--fg-sidebar);
+    position: sticky; top: 0; height: 100vh;
+    transition: width .2s ease;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 20px 20px 22px; }
+  .brand-mark {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    background: linear-gradient(135deg, #f472b6, #be185d);
+    display: grid; place-items: center;
+  }
+  .brand-text { line-height: 1.15; }
+  .brand-text strong { display: block; font-weight: 500; font-size: 14px; letter-spacing: .1px; }
+  .brand-text span { font-size: 9.5px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--fg-sidebar-muted); }
+
+  .nav { list-style: none; margin: 0; padding: 0 8px; display: flex; flex-direction: column; gap: 4px; }
+  .nav a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 12px; height: 44px; border-radius: 8px;
+    color: var(--fg-sidebar); text-decoration: none; font-weight: 500; font-size: 14px;
+  }
+  .nav a:hover { background: rgba(255,255,255,.06); }
+  .nav a[aria-current="page"] { background: var(--bg-sidebar-active); height: 32px; margin: 6px 0; }
+  .nav svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .sidebar-footer { margin-top: auto; border-top: 1px solid var(--border-sidebar); }
+  .help { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px; font-weight: 500; }
+  .help span { display: flex; align-items: center; gap: 10px; }
+  .meta { padding: 0 16px 14px; font-size: 10px; color: var(--fg-sidebar-muted); line-height: 1.35; }
+  .meta .powered { display: flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--fg-sidebar); }
+
+  body.collapsed .sidebar { width: 64px; }
+  body.collapsed .brand-text, body.collapsed .nav a span, body.collapsed .help span b,
+  body.collapsed .help > svg, body.collapsed .meta { display: none; }
+  body.collapsed .brand { padding: 20px 10px; }
+
+  /* ---------- Main ---------- */
+  .main {
+    flex: 1; min-width: 0;
+    background: var(--bg-page);
+    margin: 8px 8px 8px 0;
+    border-radius: var(--radius-lg);
+    display: flex; flex-direction: column;
+  }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 22px 16px 0; }
+  .icon-btn {
+    width: 32px; height: 32px; display: grid; place-items: center;
+    background: none; border: 0; cursor: pointer; color: var(--fg-strong); border-radius: 8px;
+  }
+  .icon-btn:hover { background: var(--bg-control); }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .divider { width: 1px; height: 28px; background: var(--border-default); }
+  .topbar h1 { margin: 0; font-size: 24px; font-weight: 700; color: var(--fg-strong); letter-spacing: -.2px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+  .lang { display: flex; align-items: center; gap: 6px; color: var(--fg-muted); font-weight: 500; background: none; border: 0; cursor: pointer; }
+  .lang svg { width: 15px; height: 15px; }
+  .user { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #2f3a8f; color: #fff; font-size: 12px; font-weight: 700;
+    display: grid; place-items: center;
+  }
+  .user strong { display: block; font-size: 12px; color: var(--fg-strong); }
+  .user small { font-size: 11px; color: #4c5bd4; }
+  :root[data-theme="dark"] .user small { color: #9aa4ff; }
+
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 24px 16px 8px; border-bottom: 1px solid var(--border-default);
+  }
+  .select-wrap { position: relative; }
+  .select-wrap select {
+    appearance: none; -webkit-appearance: none;
+    min-width: 150px; height: 32px; padding: 0 32px 0 14px;
+    background: var(--bg-control); border: 1px solid var(--border-default);
+    border-radius: var(--radius-md); color: var(--fg-strong); font-weight: 500; cursor: pointer;
+  }
+  .select-wrap select:disabled { background: var(--bg-control-disabled); color: var(--fg-subtle); cursor: not-allowed; }
+  .select-wrap::after {
+    content: ""; position: absolute; right: 13px; top: 12px; width: 5px; height: 5px;
+    border-right: 1.5px solid var(--fg-muted); border-bottom: 1.5px solid var(--fg-muted);
+    transform: rotate(45deg); pointer-events: none;
+  }
+  .clear-btn {
+    height: 32px; padding: 0 12px; border: 0; background: none; cursor: pointer;
+    color: var(--fg-muted); font-weight: 500; border-radius: var(--radius-md);
+  }
+  .clear-btn:hover { color: var(--fg-strong); background: var(--bg-control); }
+  .clear-btn[hidden] { display: none; }
+
+  .content { padding: 8px 16px 16px; display: grid; gap: 12px; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+  }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .kpi { padding: 24px 24px 26px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .kpi-label { font-size: 14px; color: var(--fg-default); margin-bottom: 4px; }
+  .kpi-value { font-size: 30px; font-weight: 800; color: var(--fg-default); letter-spacing: -.3px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .kpi-sub { margin-top: 14px; font-size: 14px; color: var(--fg-success); }
+  .kpi-sub.warn { color: var(--fg-warning); }
+  .kpi-icon {
+    width: 48px; height: 48px; border-radius: 10px; flex-shrink: 0;
+    display: grid; place-items: center; margin-top: 18px;
+  }
+  .kpi-icon svg { width: 22px; height: 22px; }
+  .kpi-icon.info { background: var(--bg-info); color: var(--fg-info); }
+  .kpi-icon.warning { background: var(--bg-warning); color: var(--fg-warning); }
+  .kpi-icon.success { background: var(--bg-success); color: var(--fg-success); }
+  .kpi-icon.soft { background: transparent; color: var(--fg-info); }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .panel { padding: 24px; min-width: 0; }
+  .panel h2 { margin: 0 0 20px; font-size: 18px; font-weight: 700; color: var(--fg-strong); }
+  .panel h2 small { font-weight: 500; color: var(--fg-muted); font-size: 14px; }
+
+  .pie-legend { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; margin: 36px 0 0; }
+  .pie-legend div { text-align: center; }
+  .pie-legend .lbl { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--fg-muted); }
+  .pie-legend .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .pie-legend .num { display: block; margin-top: 8px; font-size: 18px; font-weight: 600; color: var(--fg-default); font-variant-numeric: tabular-nums; }
+
+  .chart-box { position: relative; height: 260px; }
+  .chart-box.pie { height: 230px; margin-top: 8px; }
+  .chart-box.bar { height: 220px; }
+
+  .line-legend { display: flex; justify-content: center; gap: 28px; margin-top: 18px; font-size: 16px; }
+  .line-legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .line-legend i { display: inline-block; width: 14px; height: 2px; position: relative; }
+  .line-legend i::after { content: ""; position: absolute; left: 3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid currentColor; background: var(--bg-card); }
+
+  /* Tabela */
+  .table-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .table-wrap { overflow-x: auto; margin: 0 -24px -24px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 12px 16px; border-top: 1px solid var(--border-default); white-space: nowrap; }
+  th { font-size: 12px; font-weight: 600; color: var(--fg-muted); background: var(--bg-page); }
+  th:first-child, td:first-child { padding-left: 24px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td .name { font-weight: 600; color: var(--fg-strong); }
+  td .mono { font-family: var(--font-mono); font-size: 11.5px; color: var(--fg-subtle); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 999px; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.ok { color: var(--fg-success); background: var(--bg-success); }
+  .pill.no { color: var(--fg-danger); background: var(--bg-danger); }
+  .pill.pend { color: var(--fg-warning); background: var(--bg-warning); }
+  .empty { padding: 32px 24px; text-align: center; color: var(--fg-muted); }
+
+  @media (max-width: 1200px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
+  @media (max-width: 980px) {
+    .row-2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .sidebar { display: none; }
+    .main { margin: 0; border-radius: 0; }
+    .topbar { flex-wrap: wrap; }
+    .lang, .user div { display: none; }
+    .kpis { grid-template-columns: 1fr; }
+    .pie-legend { grid-template-columns: repeat(3, 1fr); row-gap: 16px; }
+    .select-wrap select { min-width: 0; width: 100%; }
+    .select-wrap { flex: 1 1 140px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar" aria-label="Navegação principal">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/><path d="M10 10h4"/></svg>
+      </div>
+      <div class="brand-text"><strong>Instituições</strong><span>Beneficiárias</span></div>
+    </div>
+
+    <ul class="nav">
+      <li><a href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-6"/></svg><span>Dashboards</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Caixa de entrada</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><span>Cadastros</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/></svg><span>Relatórios</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg><span>Perfis móveis</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg><span>Canais de notícias</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Usuários</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Configurações</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="help">
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><b style="font-weight:500">Ajuda</b></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+      <div class="meta">
+        v.2.16.03<br>Copyright © 2026 SASI LTDA
+        <div class="powered"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>Powered by SASI</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Conteúdo ===== -->
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="toggleSidebar" aria-label="Recolher menu lateral">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+      </button>
+      <div class="divider" aria-hidden="true"></div>
+      <h1>Dashboards</h1>
+      <div class="topbar-right">
+        <button class="lang" aria-label="Idioma">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Português (PTBR)
+        </button>
+        <button class="icon-btn" aria-label="Alto contraste">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"/></svg>
+        </button>
+        <button class="icon-btn" id="toggleTheme" aria-label="Alternar tema claro/escuro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        </button>
+        <div class="user">
+          <div class="avatar" aria-hidden="true">JP</div>
+          <div><strong>Joana Pereira</strong><small>Admin • Secretaria</small></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="filters" role="group" aria-label="Filtros">
+      <div class="select-wrap">
+        <select id="fTipo" aria-label="Tipo de instituição">
+          <option value="">Tipo de instituição</option>
+          <option value="escola">Escola</option>
+          <option value="creche">Creche</option>
+          <option value="centro_assistencia">Centro de Assistência Social</option>
+          <option value="abrigo">Abrigo</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <select id="fBairro" aria-label="Bairro"><option value="">Bairro</option></select>
+      </div>
+      <div class="select-wrap">
+        <select id="fEstrutura" aria-label="Estrutura adequada">
+          <option value="">Estrutura adequada</option>
+          <option value="sim">Sim</option>
+          <option value="nao">Não</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <select id="fPeriodo" aria-label="Período">
+          <option value="6">Últimos 6 meses</option>
+          <option value="3">Últimos 3 meses</option>
+          <option value="1">Último mês</option>
+        </select>
+      </div>
+      <button class="clear-btn" id="clearFilters" hidden>Limpar filtros</button>
+    </div>
+
+    <section class="content">
+      <!-- KPIs -->
+      <div class="kpis">
+        <article class="card kpi">
+          <div>
+            <div class="kpi-label">Total de instituições</div>
+            <div class="kpi-value" id="kTotal">0</div>
+            <div class="kpi-sub" id="kTotalSub"></div>
+          </div>
+          <div class="kpi-icon info" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></svg></div>
+        </article>
+        <article class="card kpi">
+          <div>
+            <div class="kpi-label">Pessoas atendidas</div>
+            <div class="kpi-value" id="kPessoas">0</div>
+            <div class="kpi-sub" id="kPessoasSub"></div>
+          </div>
+          <div class="kpi-icon soft" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        </article>
+        <article class="card kpi">
+          <div>
+            <div class="kpi-label">Sem estrutura adequada</div>
+            <div class="kpi-value" id="kSemEstrutura">0</div>
+            <div class="kpi-sub warn" id="kSemEstruturaSub"></div>
+          </div>
+          <div class="kpi-icon warning" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+        </article>
+        <article class="card kpi">
+          <div>
+            <div class="kpi-label">Documentação confirmada</div>
+            <div class="kpi-value" id="kDocs">0%</div>
+            <div class="kpi-sub" id="kDocsSub"></div>
+          </div>
+          <div class="kpi-icon soft" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></div>
+        </article>
+      </div>
+
+      <!-- Pizza + Linha -->
+      <div class="row-2">
+        <article class="card panel">
+          <h2>Instituições por tipo</h2>
+          <div class="pie-legend" id="pieLegend"></div>
+          <div class="chart-box pie"><canvas id="pieChart" aria-label="Gráfico de pizza: instituições por tipo" role="img"></canvas></div>
+        </article>
+
+        <article class="card panel">
+          <h2>Cadastros por mês <small>(últimos 6 meses)</small></h2>
+          <div class="chart-box"><canvas id="lineChart" aria-label="Gráfico de linhas: cadastros por mês" role="img"></canvas></div>
+          <div class="line-legend">
+            <span style="color:var(--chart-line-a)"><i style="background:var(--chart-line-a)"></i>Instituições cadastradas</span>
+            <span style="color:var(--chart-line-b)"><i style="background:var(--chart-line-b)"></i>Aptas para expansão</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Barras -->
+      <article class="card panel">
+        <h2>Pessoas atendidas por bairro</h2>
+        <div class="chart-box bar"><canvas id="barChart" aria-label="Gráfico de barras: pessoas atendidas por bairro" role="img"></canvas></div>
+      </article>
+
+      <!-- Tabela -->
+      <article class="card panel">
+        <div class="table-head">
+          <h2>Últimos cadastros</h2>
+          <small style="color:var(--fg-muted)" id="tableCount"></small>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Instituição</th>
+                <th>Tipo</th>
+                <th>Bairro</th>
+                <th class="num">Atendidos</th>
+                <th>Estrutura adequada</th>
+                <th>Documentos</th>
+                <th>Responsável</th>
+                <th>Servidor responsável</th>
+                <th>Cadastro</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+
+<script>
+/* =====================================================================
+   Dados de exemplo — cada registro espelha os campos do formulário:
+   nome_instituicao, tipo_instituicao, tipo_instituicao_outro, cnpj_instituicao,
+   endereco_completo, bairro, telefone_contato, nome_responsavel,
+   publico_atendido, numero_pessoas_atendidas, possui_estrutura_adequada,
+   descricao_estrutura, confirmo_anexo_documentos, servidor_responsavel,
+   observacoes, data_cadastro
+   Substitua MOCK pelo retorno da API do sistema.
+   ===================================================================== */
+const TIPOS = {
+  escola: "Escola",
+  creche: "Creche",
+  centro_assistencia: "Centro de Assistência Social",
+  abrigo: "Abrigo",
+  outro: "Outro",
+};
+const TIPO_ORDEM = Object.keys(TIPOS);
+const BAIRROS = ["Compensa", "Cidade Nova", "Centro", "Japiim", "Alvorada", "Flores", "São José", "Coroado", "Petrópolis", "Redenção"];
+const MESES = ["Abr", "Mai", "Jun", "Jul", "Ago", "Set"]; // 2026
+const SERVIDORES = ["João Pedro Almeida", "Ana Cláudia Lima", "Rafael Monteiro", "Luciana Batista"];
+const RESPONSAVEIS = ["Maria de Fátima Souza", "Carlos Henrique Dias", "Rosângela Pinto", "Francisco Nogueira", "Tereza Cristina Melo", "Antônio Barros", "Jéssica Farias", "Raimundo Lopes"];
+const NOMES = {
+  escola: ["Escola Municipal Nova Esperança", "Escola Municipal Rio Negro", "Escola Estadual Sol Nascente", "Escola Municipal Vila Verde", "Escola Comunitária Caminhos"],
+  creche: ["Creche Pequeno Príncipe", "Creche Mundo Encantado", "Creche Sementinha", "Creche Arco-Íris"],
+  centro_assistencia: ["CRAS Compensa", "Centro Social Bem Viver", "Centro de Convivência Família Unida"],
+  abrigo: ["Abrigo Casa Mãe", "Abrigo Lar Acolhedor", "Casa de Passagem Renascer"],
+  outro: ["Associação Reabilita Mais", "Instituto Mãos Dadas", "Associação Comunitária Viver"],
+};
+const OUTROS_DESC = ["Associação comunitária de reabilitação", "Instituto de apoio a idosos", "Associação de moradores"];
+
+// gerador pseudoaleatório determinístico
+let seed = 42;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const pick = arr => arr[Math.floor(rnd() * arr.length)];
+const pickTipo = () => { const r = rnd(); return r < .38 ? "escola" : r < .62 ? "creche" : r < .80 ? "centro_assistencia" : r < .92 ? "abrigo" : "outro"; };
+const cnpj = () => {
+  const d = n => String(Math.floor(rnd() * 10 ** n)).padStart(n, "0");
+  return `${d(2)}.${d(3)}.${d(3)}/0001-${d(2)}`;
+};
+
+const MOCK = [];
+const porMes = [9, 12, 14, 11, 17, 21];
+porMes.forEach((qtd, mesIdx) => {
+  for (let i = 0; i < qtd; i++) {
+    const tipo = pickTipo();
+    const base = { escola: 320, creche: 90, centro_assistencia: 210, abrigo: 35, outro: 70 }[tipo];
+    MOCK.push({
+      nome_instituicao: pick(NOMES[tipo]) + (rnd() > .6 ? " " + (Math.floor(rnd() * 9) + 2) : ""),
+      tipo_instituicao: tipo,
+      tipo_instituicao_outro: tipo === "outro" ? pick(OUTROS_DESC) : "",
+      cnpj_instituicao: cnpj(),
+      bairro: pick(BAIRROS),
+      nome_responsavel: pick(RESPONSAVEIS),
+      numero_pessoas_atendidas: Math.round(base * (0.5 + rnd())),
+      possui_estrutura_adequada: rnd() > .36 ? "sim" : "nao",
+      confirmo_anexo_documentos: rnd() > .2,
+      servidor_responsavel: pick(SERVIDORES),
+      mes: mesIdx,
+      data_cadastro: new Date(2026, 3 + mesIdx, 1 + Math.floor(rnd() * 28)),
+    });
+  }
+});
+MOCK.sort((a, b) => b.data_cadastro - a.data_cadastro);
+
+/* ===================================================================== */
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString("pt-BR");
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+// popula filtro de bairros
+BAIRROS.slice().sort().forEach(b => $("fBairro").insertAdjacentHTML("beforeend", `<option value="${b}">${b}</option>`));
+
+function filtrar() {
+  const t = $("fTipo").value, b = $("fBairro").value, e = $("fEstrutura").value, p = +$("fPeriodo").value;
+  $("clearFilters").hidden = !(t || b || e || p !== 6);
+  return MOCK.filter(r =>
+    (!t || r.tipo_instituicao === t) &&
+    (!b || r.bairro === b) &&
+    (!e || r.possui_estrutura_adequada === e) &&
+    r.mes >= 6 - p
+  );
+}
+
+let pie, line, bar;
+
+// rótulos externos da pizza, como no modelo
+const pieLabels = {
+  id: "pieLabels",
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    const meta = chart.getDatasetMeta(0);
+    const data = chart.data.datasets[0].data;
+    const total = data.reduce((a, b) => a + b, 0);
+    if (!total) return;
+    ctx.save();
+    ctx.font = "500 12px Inter, sans-serif";
+    ctx.fillStyle = css("--fg-default");
+    ctx.textBaseline = "middle";
+    meta.data.forEach((arc, i) => {
+      if (!data[i]) return;
+      const ang = (arc.startAngle + arc.endAngle) / 2;
+      const r = arc.outerRadius + 12;
+      const x = arc.x + Math.cos(ang) * r;
+      const y = arc.y + Math.sin(ang) * r;
+      ctx.textAlign = Math.cos(ang) >= 0 ? "left" : "right";
+      const pct = Math.round(data[i] / total * 100);
+      ctx.fillText(`${chart.data.labels[i]}: ${pct}%`, x, y);
+    });
+    ctx.restore();
+  },
+};
+
+function baseScales() {
+  return {
+    x: {
+      grid: { color: css("--grid"), drawTicks: true, tickColor: css("--fg-subtle") },
+      border: { color: css("--fg-subtle") },
+      ticks: { color: css("--fg-muted"), font: { size: 12 } },
+    },
+    y: {
+      beginAtZero: true,
+      grid: { color: css("--grid") },
+      border: { color: css("--fg-subtle") },
+      ticks: { color: css("--fg-muted"), font: { size: 12 }, callback: v => fmt(v) },
+    },
+  };
+}
+
+const tooltip = () => ({
+  backgroundColor: "#0d0f33",
+  titleFont: { family: "Inter", weight: "600" },
+  bodyFont: { family: "Inter" },
+  padding: 10,
+  cornerRadius: 8,
+});
+
+function render() {
+  const rows = filtrar();
+  const total = rows.length;
+  const pessoas = rows.reduce((s, r) => s + r.numero_pessoas_atendidas, 0);
+  const aptas = rows.filter(r => r.possui_estrutura_adequada === "sim").length;
+  const semEstrutura = total - aptas;
+  const docs = rows.filter(r => r.confirmo_anexo_documentos).length;
+  const pctDocs = total ? Math.round(docs / total * 100) : 0;
+  const ultimoMes = rows.filter(r => r.mes === 5).length;
+
+  // KPIs
+  $("kTotal").textContent = fmt(total);
+  $("kTotalSub").textContent = `${fmt(ultimoMes)} cadastradas em setembro`;
+  $("kPessoas").textContent = fmt(pessoas);
+  $("kPessoasSub").textContent = `média de ${fmt(total ? Math.round(pessoas / total) : 0)} por instituição`;
+  $("kSemEstrutura").textContent = fmt(semEstrutura);
+  $("kSemEstruturaSub").textContent = `${fmt(aptas)} aptas para expansão`;
+  $("kDocs").textContent = pctDocs + "%";
+  $("kDocsSub").textContent = `${fmt(docs)} de ${fmt(total)} com anexo`;
+
+  // Pizza — por tipo
+  const cores = ["--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5"].map(css);
+  const porTipo = TIPO_ORDEM.map(t => rows.filter(r => r.tipo_instituicao === t).length);
+  const rotCurto = ["Escola", "Creche", "Centro social", "Abrigo", "Outro"];
+  $("pieLegend").innerHTML = TIPO_ORDEM.map((t, i) => `
+    <div><span class="lbl"><span class="dot" style="background:${cores[i]}"></span>${rotCurto[i]}</span>
+    <span class="num">${fmt(porTipo[i])}</span></div>`).join("");
+
+  if (pie) pie.destroy();
+  pie = new Chart($("pieChart"), {
+    type: "pie",
+    data: { labels: rotCurto, datasets: [{ data: porTipo, backgroundColor: cores, borderColor: css("--bg-card"), borderWidth: 1 }] },
+    options: {
+      maintainAspectRatio: false,
+      layout: { padding: { left: 110, right: 110, top: 16, bottom: 16 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...tooltip(), callbacks: { label: c => ` ${fmt(c.parsed)} instituições` } },
+      },
+    },
+    plugins: [pieLabels],
+  });
+
+  // Linha — cadastros por mês
+  const p = +$("fPeriodo").value;
+  const mesesIdx = [...Array(p)].map((_, i) => 6 - p + i);
+  const cad = mesesIdx.map(m => rows.filter(r => r.mes === m).length);
+  const apt = mesesIdx.map(m => rows.filter(r => r.mes === m && r.possui_estrutura_adequada === "sim").length);
+  const ca = css("--chart-line-a"), cb = css("--chart-line-b");
+  if (line) line.destroy();
+  line = new Chart($("lineChart"), {
+    type: "line",
+    data: {
+      labels: mesesIdx.map(m => MESES[m]),
+      datasets: [
+        { label: "Instituições cadastradas", data: cad, borderColor: ca, backgroundColor: ca, tension: .4, pointRadius: 5, pointHoverRadius: 7, borderWidth: 3 },
+        { label: "Aptas para expansão", data: apt, borderColor: cb, backgroundColor: cb, tension: .4, pointRadius: 5, pointHoverRadius: 7, borderWidth: 3 },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: baseScales(),
+      plugins: { legend: { display: false }, tooltip: tooltip() },
+    },
+  });
+
+  // Barras — pessoas atendidas por bairro
+  const somaBairro = BAIRROS.map(b => ({ b, v: rows.filter(r => r.bairro === b).reduce((s, r) => s + r.numero_pessoas_atendidas, 0) }))
+    .filter(x => x.v > 0).sort((a, b) => b.v - a.v);
+  if (bar) bar.destroy();
+  bar = new Chart($("barChart"), {
+    type: "bar",
+    data: {
+      labels: somaBairro.map(x => x.b),
+      datasets: [{ label: "Pessoas atendidas", data: somaBairro.map(x => x.v), backgroundColor: css("--chart-1"), borderRadius: 2, maxBarThickness: 210, categoryPercentage: .8, barPercentage: .95 }],
+    },
+    options: {
+      maintainAspectRatio: false,
+      scales: (() => { const s = baseScales(); s.x.grid.borderDash = [4, 4]; s.y.grid.borderDash = [4, 4]; return s; })(),
+      plugins: { legend: { display: false }, tooltip: { ...tooltip(), callbacks: { label: c => ` ${fmt(c.parsed.y)} pessoas` } } },
+    },
+  });
+
+  // Tabela
+  const ultimos = rows.slice(0, 8);
+  $("tableCount").textContent = total ? `Exibindo ${ultimos.length} de ${fmt(total)}` : "";
+  $("tbody").innerHTML = ultimos.length ? ultimos.map(r => `
+    <tr>
+      <td><div class="name">${r.nome_instituicao}</div><div class="mono">${r.cnpj_instituicao}</div></td>
+      <td>${TIPOS[r.tipo_instituicao]}${r.tipo_instituicao_outro ? `<div class="mono">${r.tipo_instituicao_outro}</div>` : ""}</td>
+      <td>${r.bairro}</td>
+      <td class="num">${fmt(r.numero_pessoas_atendidas)}</td>
+      <td>${r.possui_estrutura_adequada === "sim" ? '<span class="pill ok">Sim</span>' : '<span class="pill no">Não</span>'}</td>
+      <td>${r.confirmo_anexo_documentos ? '<span class="pill ok">Confirmado</span>' : '<span class="pill pend">Pendente</span>'}</td>
+      <td>${r.nome_responsavel}</td>
+      <td>${r.servidor_responsavel}</td>
+      <td>${r.data_cadastro.toLocaleDateString("pt-BR")}</td>
+    </tr>`).join("")
+    : `<tr><td colspan="9" class="empty">Nenhuma instituição encontrada para os filtros selecionados. Ajuste os filtros ou limpe-os para ver todos os cadastros.</td></tr>`;
+}
+
+["fTipo", "fBairro", "fEstrutura", "fPeriodo"].forEach(id => $(id).addEventListener("change", render));
+$("clearFilters").addEventListener("click", () => {
+  $("fTipo").value = $("fBairro").value = $("fEstrutura").value = "";
+  $("fPeriodo").value = "6";
+  render();
+});
+$("toggleTheme").addEventListener("click", () => {
+  const el = document.documentElement;
+  el.dataset.theme = el.dataset.theme === "dark" ? "light" : "dark";
+  render();
+});
+$("toggleSidebar").addEventListener("click", () => {
+  document.body.classList.toggle("collapsed");
+  setTimeout(() => [pie, line, bar].forEach(c => c && c.resize()), 220);
+});
+
+Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+render();
+</script>
+</body>
+</html>

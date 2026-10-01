@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de Instituições Aptas</title>
+<script>
+  // aplica o tema salvo antes da pintura, evitando piscar no tema do sistema
+  try { document.documentElement.dataset.theme = localStorage.getItem("caprec-tema") === "dark" ? "dark" : "light"; }
+  catch (e) { document.documentElement.dataset.theme = "light"; }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Layout: menu lateral escuro + painel claro; mapa ocupa a coluna principal, indicadores em coluna à direita */
+  :root {
+    --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+    --bg-shell: #0f3836;
+    --fg-sidebar: #e8f0ef;
+    --fg-sidebar-muted: #9fb9b6;
+    --bg-sidebar-active: rgba(255, 255, 255, .2);
+    --border-sidebar: #285250;
+
+    --bg-page: #f4f6f7;
+    --bg-card: #ffffff;
+    --bg-control: #f1f3f5;
+    --bg-soft: #eef1f6;
+    --border-default: #dfe4e7;
+    --fg-strong: #14233a;
+    --fg-default: #2a3442;
+    --fg-muted: #5c6773;
+    --fg-subtle: #8a949e;
+    --accent: #2f3a9a;
+    --accent-border: #4a56c0;
+    --accent-solid: #3a46b0;
+    --bg-zebra: #f6f7f9;
+    --bg-hover: #eef1fb;
+
+    --st-apta: #1f8a5f;
+    --st-pend: #dda425;
+    --st-nao: #d4473c;
+    --st-rev: #4451c2;
+    --st-apta-bg: #ddf1e7;
+    --st-pend-bg: #fbf0d3;
+    --st-nao-bg: #fbe1de;
+    --st-rev-bg: #e2e5fa;
+    --st-apta-fg: #17704c;
+    --st-pend-fg: #8a6208;
+    --st-nao-fg: #a8302a;
+    --st-rev-fg: #3340a8;
+
+    --map-ocean: #a7d8ee;
+    --map-land: #dcefe0;
+    --map-zone: #cbe5d1;
+    --map-beach: #f2e7c9;
+    --map-water: #7cc1e4;
+    --map-road: #ffffff;
+    --map-road-edge: #b9c3c4;
+    --map-hatch: #7f8c8a;
+    --map-dune: #e2b56a;
+    --map-label: #2d3a3f;
+    --map-label-muted: #7a8689;
+    --map-ocean-label: #5a7f93;
+    --map-panel: rgba(255, 255, 255, .92);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg-page: #111a20; --bg-card: #18232b; --bg-control: #1f2c35; --bg-soft: #1f2c35;
+      --border-default: #2b3a45; --fg-strong: #eef3f6; --fg-default: #d3dbe1; --fg-muted: #9ca8b2; --fg-subtle: #75828c;
+      --accent: #a9b1ff; --accent-border: #7a85e6; --accent-solid: #4b57c9; --bg-zebra: #1b272f; --bg-hover: #222f42;
+      --st-apta-bg: #163a2c; --st-pend-bg: #3d3117; --st-nao-bg: #432220; --st-rev-bg: #252b55;
+      --st-apta-fg: #6fd3a5; --st-pend-fg: #f0c766; --st-nao-fg: #f19189; --st-rev-fg: #aeb6ff;
+      --map-ocean: #1d4359; --map-land: #1c302b; --map-zone: #223a33; --map-beach: #4a4532; --map-water: #3f86ad;
+      --map-road: #51605f; --map-road-edge: #2a3735; --map-hatch: #6c7a77; --map-dune: #8a7140;
+      --map-label: #d8e2e0; --map-label-muted: #8c9a97; --map-ocean-label: #8fb4c8; --map-panel: rgba(24, 35, 43, .92);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg-page: #111a20; --bg-card: #18232b; --bg-control: #1f2c35; --bg-soft: #1f2c35;
+    --border-default: #2b3a45; --fg-strong: #eef3f6; --fg-default: #d3dbe1; --fg-muted: #9ca8b2; --fg-subtle: #75828c;
+    --accent: #a9b1ff; --accent-border: #7a85e6; --accent-solid: #4b57c9; --bg-zebra: #1b272f; --bg-hover: #222f42;
+    --st-apta-bg: #163a2c; --st-pend-bg: #3d3117; --st-nao-bg: #432220; --st-rev-bg: #252b55;
+    --st-apta-fg: #6fd3a5; --st-pend-fg: #f0c766; --st-nao-fg: #f19189; --st-rev-fg: #aeb6ff;
+    --map-ocean: #1d4359; --map-land: #1c302b; --map-zone: #223a33; --map-beach: #4a4532; --map-water: #3f86ad;
+    --map-road: #51605f; --map-road-edge: #2a3735; --map-hatch: #6c7a77; --map-dune: #8a7140;
+    --map-label: #d8e2e0; --map-label-muted: #8c9a97; --map-ocean-label: #8fb4c8; --map-panel: rgba(24, 35, 43, .92);
+    color-scheme: dark;
+  }
+
+  /* Alto contraste: textos e bordas mais fortes nos dois temas */
+  :root[data-contrast="high"] {
+    --fg-default: #0f1722; --fg-muted: #2f3a46; --fg-subtle: #4a5560;
+    --border-default: #8d98a3; --accent: #1f2a85;
+    --st-apta-fg: #0d5a3a; --st-pend-fg: #6b4a00; --st-nao-fg: #8a1f19; --st-rev-fg: #232f95;
+  }
+  :root[data-contrast="high"][data-theme="dark"] {
+    --fg-default: #f4f7fa; --fg-muted: #d0d8df; --fg-subtle: #aab5bf;
+    --border-default: #6b7c8a; --accent: #c8ceff;
+    --st-apta-fg: #8ff0c2; --st-pend-fg: #ffd97a; --st-nao-fg: #ffb0a9; --st-rev-fg: #cdd2ff;
+  }
+  .icon-btn[aria-pressed="true"] { background: var(--bg-control); color: var(--accent); }
+  .icon-btn .ico-moon { display: none; }
+  :root[data-theme="dark"] .icon-btn .ico-sun { display: none; }
+  :root[data-theme="dark"] .icon-btn .ico-moon { display: block; }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    background: var(--bg-shell);
+    color: var(--fg-default);
+    -webkit-font-smoothing: antialiased;
+  }
+  button, select, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent-border); outline-offset: 2px; border-radius: 6px; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* ---------- Menu lateral ---------- */
+  .sidebar {
+    width: 268px; flex-shrink: 0; color: var(--fg-sidebar);
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .brand { display: flex; gap: 12px; align-items: center; padding: 22px 22px 18px; }
+  .brand-name { font-size: 26px; font-weight: 800; letter-spacing: .3px; line-height: 1; }
+  .brand-sub { font-size: 13px; color: var(--fg-sidebar-muted); line-height: 1.3; margin-top: 6px; }
+  .brand-stripe { height: 3px; margin: 0 8px; background: linear-gradient(90deg, #1f8a5f 0 40%, #dda425 40% 68%, #4451c2 68% 100%); }
+
+  .nav { padding: 22px 0 0 18px; }
+  .nav-group {
+    display: flex; align-items: center; gap: 12px; width: calc(100% - 18px);
+    padding: 8px 10px; background: none; border: 0; cursor: pointer;
+    font-size: 17px; font-weight: 500; color: var(--fg-sidebar);
+  }
+  .nav-group svg { width: 18px; height: 18px; }
+  .nav-group .chev { margin-left: auto; width: 14px; height: 14px; }
+  .nav-sub { list-style: none; margin: 10px 0 0 6px; padding: 0 0 0 10px; border-left: 1px solid var(--border-sidebar); display: grid; gap: 4px; }
+  .nav-sub a {
+    display: block; padding: 9px 12px; border-radius: 8px 0 0 8px;
+    color: var(--fg-sidebar); text-decoration: none; font-size: 15.5px;
+  }
+  .nav-sub a:hover { background: rgba(255, 255, 255, .07); }
+  .nav-sub a[aria-current="page"] { background: var(--bg-sidebar-active); font-weight: 500; }
+
+  .sidebar-foot { margin-top: auto; }
+  .help { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid var(--border-sidebar); margin: 0 10px; font-size: 16px; }
+  .help span { display: flex; align-items: center; gap: 12px; }
+  .meta { padding: 8px 30px 18px; font-size: 11.5px; color: var(--fg-sidebar-muted); line-height: 1.5; }
+  .meta .powered { display: flex; gap: 8px; align-items: center; color: var(--fg-sidebar); margin-top: 8px; font-weight: 500; }
+
+  body.collapsed .sidebar { width: 76px; }
+  body.collapsed .brand-text, body.collapsed .nav-sub, body.collapsed .nav-group span, body.collapsed .nav-group .chev,
+  body.collapsed .help span b, body.collapsed .help > svg, body.collapsed .meta { display: none; }
+  body.collapsed .brand { padding: 22px 14px; }
+
+  /* ---------- Painel ---------- */
+  .main {
+    flex: 1; min-width: 0; margin: 10px 10px 10px 0;
+    background: var(--bg-page); border-radius: 14px;
+    display: flex; flex-direction: column;
+  }
+  .topbar { display: flex; align-items: center; gap: 14px; padding: 24px 24px 0; flex-wrap: wrap; }
+  .icon-btn { width: 34px; height: 34px; display: grid; place-items: center; background: none; border: 0; border-radius: 8px; cursor: pointer; color: var(--fg-strong); }
+  .icon-btn:hover { background: var(--bg-control); }
+  .icon-btn svg { width: 20px; height: 20px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 700; color: var(--fg-strong); letter-spacing: -.3px; text-wrap: balance; }
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+  .lang { display: flex; align-items: center; gap: 7px; background: none; border: 0; cursor: pointer; font-size: 16px; color: var(--fg-default); }
+  .lang svg { width: 18px; height: 18px; }
+  .user { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-shell); color: #fff; font-weight: 700; font-size: 14px; display: grid; place-items: center; }
+  .user strong { display: block; font-size: 15.5px; color: var(--fg-strong); }
+  .user small { font-size: 13.5px; color: var(--fg-muted); }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px 24px 20px; border-bottom: 1px solid var(--border-default); }
+  .search { position: relative; flex: 0 1 340px; min-width: 200px; }
+  .search svg { position: absolute; left: 14px; top: 12px; width: 18px; height: 18px; color: var(--fg-strong); }
+  .search input {
+    width: 100%; height: 44px; padding: 0 14px 0 44px;
+    background: var(--bg-control); border: 1px solid var(--border-default); border-radius: 8px; font-size: 16px;
+  }
+  .search input::placeholder { color: var(--fg-muted); }
+  .sel { position: relative; }
+  .sel select {
+    appearance: none; -webkit-appearance: none; height: 44px; min-width: 190px; padding: 0 40px 0 16px;
+    background: var(--bg-control); border: 1px solid var(--border-default); border-radius: 8px;
+    font-size: 16px; color: var(--fg-strong); cursor: pointer;
+  }
+  .sel select.active { background: var(--bg-card); border-color: var(--accent-border); color: var(--accent); font-weight: 500; }
+  .sel::after {
+    content: ""; position: absolute; right: 18px; top: 17px; width: 6px; height: 6px;
+    border-right: 2px solid var(--fg-strong); border-bottom: 2px solid var(--fg-strong);
+    transform: rotate(45deg); pointer-events: none;
+  }
+  .clear { height: 44px; padding: 0 14px; background: none; border: 0; border-radius: 8px; cursor: pointer; color: var(--fg-muted); font-weight: 500; }
+  .clear:hover { background: var(--bg-control); color: var(--fg-strong); }
+
+  .content { display: grid; grid-template-columns: minmax(0, 1fr) 430px; gap: 24px; padding: 22px 24px 24px; align-items: start; }
+  .card { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 12px; }
+
+  /* Mapa */
+  .map-card { padding: 20px 20px 20px; min-width: 0; }
+  .map-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; margin-bottom: 16px; }
+  .map-head h2 { margin: 0; font-size: 19px; font-weight: 600; color: var(--fg-strong); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14.5px; color: var(--fg-muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .map-wrap { position: relative; border-radius: 10px; overflow: hidden; background: var(--map-land); }
+  .map-wrap svg { display: block; width: 100%; height: auto; }
+  .tag {
+    position: absolute; left: 16px; top: 16px; padding: 4px 12px; border-radius: 6px;
+    background: var(--map-panel); font-size: 12px; letter-spacing: 1px; color: var(--fg-muted); text-transform: uppercase;
+  }
+  .scale, .size-legend {
+    position: absolute; bottom: 14px; background: var(--map-panel); border-radius: 8px;
+    padding: 10px 14px; font-size: 12.5px; color: var(--fg-default);
+  }
+  .scale { left: 16px; }
+  .scale .bar { width: 120px; height: 4px; background: linear-gradient(90deg, var(--fg-strong) 50%, var(--fg-subtle) 50%); margin-bottom: 6px; border-radius: 2px; }
+  .scale .ticks { display: flex; justify-content: space-between; width: 130px; }
+  .size-legend { right: 16px; }
+  .size-legend .ttl { font-size: 13px; margin-bottom: 6px; }
+  .size-legend .circles { display: flex; align-items: flex-end; gap: 14px; }
+  .size-legend .c { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11.5px; color: var(--fg-muted); }
+  .size-legend .c b { display: block; border-radius: 50%; border: 1.5px solid var(--fg-muted); }
+
+  .bubble { cursor: pointer; transition: opacity .2s; }
+  .bubble .core { stroke: transparent; stroke-width: 3; }
+  .bubble:hover .core, .bubble.sel .core { stroke: #fff; }
+  .bubble.dim { opacity: .14; pointer-events: none; }
+  .bubble text { pointer-events: none; }
+
+  .popup {
+    position: absolute; width: 300px; max-width: calc(100% - 16px);
+    background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 10px;
+    padding: 14px 16px; box-shadow: 0 10px 28px rgba(15, 30, 40, .18); font-size: 13.5px; z-index: 3;
+  }
+  .popup h3 { margin: 0 0 3px; font-size: 15.5px; color: var(--fg-strong); padding-right: 22px; }
+  .popup .sub { color: var(--fg-muted); }
+  .popup .checks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 10px 0 8px; }
+  .popup .ok { color: var(--st-apta-fg); }
+  .popup .x { color: var(--st-nao-fg); }
+  .popup .line { color: var(--fg-default); margin-top: 3px; }
+  .popup .note { margin-top: 8px; font-weight: 600; color: var(--accent); }
+  .popup .close { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; background: none; cursor: pointer; border-radius: 6px; color: var(--fg-muted); font-size: 18px; line-height: 1; }
+  .popup .close:hover { background: var(--bg-control); }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px; border-radius: 999px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.apta { background: var(--st-apta-bg); color: var(--st-apta-fg); }
+  .pill.pendencia { background: var(--st-pend-bg); color: var(--st-pend-fg); }
+  .pill.nao_apta { background: var(--st-nao-bg); color: var(--st-nao-fg); }
+  .pill.revisao { background: var(--st-rev-bg); color: var(--st-rev-fg); }
+
+  /* Coluna de indicadores */
+  .side { display: grid; gap: 20px; min-width: 0; }
+  .kpi { padding: 20px 24px; }
+  .eyebrow { font-size: 13.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--fg-default); }
+  .kpi-value { margin-top: 10px; font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .kpi-value small { font-size: 16px; font-weight: 500; color: var(--fg-default); margin-left: 8px; }
+  .kpi-sub { margin-top: 8px; font-size: 15px; color: var(--fg-muted); }
+  .stack { display: flex; height: 7px; border-radius: 4px; overflow: hidden; margin-top: 12px; background: var(--bg-control); }
+  .stack span { height: 100%; transition: width .3s; }
+
+  .updates { padding: 20px 20px 22px; }
+  .updates h2 { margin: 0 0 14px; font-size: 19px; font-weight: 600; color: var(--fg-strong); }
+  .upd-list { display: grid; gap: 12px; }
+  .upd {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    background: var(--bg-soft); border: 1px solid var(--border-default); border-radius: 10px; padding: 12px 14px;
+  }
+  .upd:hover { border-color: var(--accent-border); }
+  .upd .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .upd .id { font-size: 16px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .upd .desc { margin-top: 6px; font-size: 14.5px; color: var(--fg-default); }
+  .empty { padding: 16px; text-align: center; color: var(--fg-muted); font-size: 14px; }
+
+  /* ---------- Navegação: item de módulo ---------- */
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; width: calc(100% - 18px); margin-top: 14px;
+    padding: 10px 10px; border-radius: 8px; text-decoration: none;
+    font-size: 17px; font-weight: 500; color: var(--fg-sidebar);
+  }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-item:hover { background: rgba(255, 255, 255, .07); }
+  .nav-item[aria-current="page"] { background: var(--bg-sidebar-active); }
+  body.collapsed .nav-item span { display: none; }
+
+  .crumbs { font-size: 14px; color: var(--fg-muted); display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+  .crumbs b { color: var(--fg-strong); font-weight: 600; }
+  .title-block { min-width: 0; }
+
+  /* ---------- Tabela de instituições ---------- */
+  .tb-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--border-default); }
+  .toggle-inativos { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border: 0; background: none; border-radius: 8px; cursor: pointer; font-size: 16px; color: var(--fg-strong); }
+  .toggle-inativos:hover { background: var(--bg-control); }
+  .toggle-inativos svg { width: 20px; height: 20px; }
+  .toggle-inativos[aria-pressed="true"] { color: var(--accent); font-weight: 500; }
+  .btn-primary {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 22px;
+    background: var(--accent-solid); color: #fff; border: 0; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-primary svg { width: 18px; height: 18px; }
+  .btn-secondary { height: 40px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--border-default); background: var(--bg-card); color: var(--fg-strong); cursor: pointer; font-weight: 500; }
+  .btn-secondary:hover { border-color: var(--accent-border); }
+
+  .toolbar { display: flex; align-items: center; gap: 14px; padding: 14px 24px; border-bottom: 1px solid var(--border-default); }
+  .date-chip { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px 0 12px; background: var(--bg-control); border: 1px solid var(--border-default); border-radius: 8px; }
+  .date-chip svg { width: 18px; height: 18px; color: var(--fg-strong); }
+  .date-chip input { border: 0; background: none; font-size: 14.5px; font-weight: 500; color: var(--fg-strong); width: 140px; }
+  .toolbar .right { margin-left: auto; display: flex; gap: 8px; position: relative; }
+
+  .table-area { padding: 12px 24px 24px; }
+  .table-card { border: 1px solid var(--border-default); border-radius: 10px; background: var(--bg-card); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  .tbl { width: 100%; border-collapse: collapse; min-width: 1080px; font-size: 15.5px; }
+  .tbl th {
+    text-align: left; padding: 0 20px; height: 64px; background: var(--bg-soft);
+    font-size: 14px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--fg-strong); white-space: nowrap;
+  }
+  .tbl th button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .tbl th button:focus-visible { outline: 2px solid var(--accent-border); border-radius: 4px; }
+  .tbl th .arrow { font-size: 11px; color: var(--fg-subtle); }
+  .tbl td { padding: 0 20px; height: 84px; border-top: 1px solid var(--border-default); color: var(--fg-default); white-space: nowrap; }
+  .tbl tbody tr:nth-child(even) td { background: var(--bg-zebra); }
+  .tbl tbody tr:hover td { background: var(--bg-hover); }
+  .tbl td.num, .tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .tbl td.mono { font-variant-numeric: tabular-nums; }
+  .tbl .inativo td { color: var(--fg-subtle); }
+  .tbl .sub { display: block; font-size: 13px; color: var(--fg-muted); margin-top: 2px; }
+  .status {
+    display: inline-flex; justify-content: center; min-width: 140px; padding: 5px 14px; border-radius: 8px;
+    border: 1.5px solid currentColor; font-size: 15px; font-weight: 600; background: var(--bg-card);
+  }
+  .status.apta { color: var(--st-apta-fg); }
+  .status.pendencia { color: var(--st-pend-fg); }
+  .status.nao_apta { color: var(--st-nao-fg); }
+  .status.revisao { color: var(--st-rev-fg); }
+  .status.inativa { color: var(--fg-subtle); }
+  .open-btn { width: 36px; height: 36px; display: grid; place-items: center; border: 0; background: none; border-radius: 8px; cursor: pointer; color: var(--fg-strong); }
+  .open-btn:hover { background: var(--bg-control); }
+  .open-btn svg { width: 22px; height: 22px; }
+
+  .pager { display: flex; justify-content: flex-end; align-items: center; gap: 18px; padding: 16px 24px; border-top: 1px solid var(--border-default); font-size: 15.5px; color: var(--fg-default); flex-wrap: wrap; }
+  .pager .pages { display: flex; gap: 4px; }
+  .pager button { min-width: 36px; height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: none; cursor: pointer; font-size: 15.5px; color: var(--fg-strong); }
+  .pager button[aria-current="page"] { background: var(--bg-control); font-weight: 700; }
+  .pager button:hover:not(:disabled) { background: var(--bg-control); }
+  .pager button:disabled { color: var(--fg-subtle); cursor: not-allowed; }
+  .tbl-empty { padding: 40px 24px; text-align: center; color: var(--fg-muted); }
+
+  .menu {
+    position: absolute; right: 0; top: 44px; z-index: 5; width: 240px; padding: 8px;
+    background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 10px; box-shadow: 0 10px 28px rgba(15, 30, 40, .16);
+  }
+  .menu label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 14.5px; }
+  .menu label:hover { background: var(--bg-control); }
+
+  /* ---------- Painel lateral (detalhe / cadastro) ---------- */
+  .scrim { position: fixed; inset: 0; background: rgba(8, 20, 24, .45); z-index: 20; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); z-index: 21;
+    background: var(--bg-card); display: flex; flex-direction: column; box-shadow: -12px 0 32px rgba(8, 20, 24, .2);
+  }
+  .drawer-head { display: flex; align-items: flex-start; gap: 12px; padding: calc(20px + env(safe-area-inset-top, 0px)) 24px 16px; border-bottom: 1px solid var(--border-default); }
+  .drawer-head h2 { margin: 0; font-size: 20px; color: var(--fg-strong); text-wrap: balance; }
+  .drawer-head .sub { color: var(--fg-muted); margin-top: 4px; font-size: 14px; }
+  .drawer-head .icon-btn { margin-left: auto; flex-shrink: 0; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 8px 24px 24px; }
+  .drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border-default); }
+  .drawer-foot .btn-primary { margin-left: 0; height: 40px; font-size: 15px; }
+  .sec { padding: 18px 0 6px; border-bottom: 1px solid var(--border-default); }
+  .sec:last-child { border-bottom: 0; }
+  .sec h3 { margin: 0 0 12px; font-size: 13px; letter-spacing: 1.1px; text-transform: uppercase; color: var(--fg-muted); font-weight: 600; }
+  .sec h3 span { color: var(--fg-subtle); font-weight: 500; }
+  .kv { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 8px 16px; margin: 0 0 12px; font-size: 14.5px; }
+  .kv dt { color: var(--fg-muted); }
+  .kv dd { margin: 0; color: var(--fg-strong); overflow-wrap: anywhere; }
+
+  .field { display: grid; gap: 6px; margin-bottom: 14px; }
+  .field > span { font-size: 14px; font-weight: 500; color: var(--fg-strong); }
+  .field input[type="text"], .field input[type="tel"], .field input[type="number"], .field select, .field textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border-default); border-radius: 8px;
+    background: var(--bg-card); font-size: 15px; color: var(--fg-strong);
+  }
+  .field textarea { min-height: 76px; resize: vertical; }
+  .field .hint { font-size: 12.5px; color: var(--fg-muted); }
+  .field.invalid input, .field.invalid select, .field.invalid textarea { border-color: var(--st-nao); }
+  .field .err { font-size: 12.5px; color: var(--st-nao-fg); }
+  .radio-row { display: flex; gap: 20px; }
+  .radio-row label, .check { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; cursor: pointer; }
+  .info-box { padding: 12px 14px; border-radius: 8px; background: var(--bg-soft); color: var(--fg-default); font-size: 14px; margin-bottom: 12px; }
+  .file-row { margin-top: 8px; font-size: 14px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30;
+    background: var(--fg-strong); color: var(--bg-card); padding: 12px 18px; border-radius: 10px; font-size: 14.5px; box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    max-width: calc(100% - 32px);
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 860px) {
+    .tb-filters, .toolbar, .table-area { padding-left: 16px; padding-right: 16px; }
+    .btn-primary { margin-left: 0; }
+    .kv { grid-template-columns: 1fr; gap: 2px; }
+    .kv dd { margin-bottom: 8px; }
+  }
+  @media (max-width: 1380px) {
+    .content { grid-template-columns: 1fr; }
+    .side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .updates { grid-column: 1 / -1; }
+  }
+  @media (max-width: 860px) {
+    .sidebar { display: none; }
+    .main { margin: 0; border-radius: 0; }
+    .lang, .user div, #toggleSidebar { display: none; }
+    h1 { font-size: 22px; }
+    .topbar, .filters, .content { padding-left: 16px; padding-right: 16px; }
+    .side { grid-template-columns: 1fr; }
+    .sel, .search { flex: 1 1 100%; }
+    .sel select { width: 100%; }
+    .size-legend, .scale { display: none; }
+  }
+</style>
+
+<div class="app">
+  <aside class="sidebar" aria-label="Navegação principal">
+    <div class="brand">
+      <svg width="58" height="64" viewBox="0 0 58 64" aria-hidden="true">
+        <path d="M29 3 L53 11 V30 C53 46 42 56 29 61 C16 56 5 46 5 30 V11 Z" fill="#14514d" stroke="#dda425" stroke-width="3"/>
+        <circle cx="21" cy="24" r="5" fill="#dda425"/>
+        <circle cx="37" cy="24" r="5" fill="#7cc1e4"/>
+        <path d="M14 38 C20 33 25 33 29 37 C33 33 38 33 44 38" fill="none" stroke="#5fc39a" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M17 45 C22 42 25 42 29 45 C33 42 36 42 41 45" fill="none" stroke="#7cc1e4" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">
+        <div class="brand-name">CAPREC</div>
+        <div class="brand-sub">Captação de Recursos<br>Aquiraz · CE</div>
+      </div>
+    </div>
+    <div class="brand-stripe" aria-hidden="true"></div>
+
+    <nav class="nav">
+      <button class="nav-group" aria-expanded="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/></svg>
+        <span>Dashboard</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <ul class="nav-sub">
+        <li><a href="#mapa" data-view="mapa">Mapa de instituições aptas</a></li>
+        <li><a href="#painel" data-soon>Painel de captação</a></li>
+        <li><a href="#empresas" data-soon>Empresas doadoras</a></li>
+      </ul>
+      <a class="nav-item" href="#instituicoes" data-view="instituicoes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></svg>
+        <span>Instituições registradas</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="help">
+        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><b style="font-weight:500">Ajuda</b></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+      <div class="meta">
+        v.1.0.0 · módulo interno Cidade na Mão<br>Copyright © 2026 SASI LTDA
+        <div class="powered"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f26b3a" stroke-width="2.6" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>Powered by SASI</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="toggleSidebar" aria-label="Recolher menu lateral">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+      </button>
+      <div class="title-block">
+        <div class="crumbs" id="crumbs"></div>
+        <h1 id="pageTitle">Mapa de instituições aptas</h1>
+      </div>
+      <div class="top-right">
+        <button class="lang" aria-label="Idioma">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg>
+          Português (PTBR)
+        </button>
+        <button class="icon-btn" id="toggleContrast" aria-label="Alto contraste" aria-pressed="false" title="Alto contraste">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"/></svg>
+        </button>
+        <button class="icon-btn" id="toggleTheme" aria-label="Mudar para o modo escuro" title="Mudar para o modo escuro">
+          <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></svg>
+          <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
+        </button>
+        <div class="user">
+          <div class="avatar" aria-hidden="true">AP</div>
+          <div><strong>Ana Paula Santos</strong><small>Coordenadora de projetos</small></div>
+        </div>
+      </div>
+    </header>
+
+    <div id="viewMapa">
+    <div class="filters" role="group" aria-label="Filtros">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="fBusca" type="search" placeholder="Buscar instituição ou CNPJ" aria-label="Buscar instituição ou CNPJ">
+      </label>
+      <div class="sel"><select id="fTipo" aria-label="Tipo de instituição"></select></div>
+      <div class="sel"><select id="fBairro" aria-label="Território"></select></div>
+      <div class="sel"><select id="fEstrutura" aria-label="Estrutura física"></select></div>
+      <div class="sel"><select id="fSituacao" aria-label="Situação"></select></div>
+      <button class="clear" id="limpar" hidden>Limpar filtros</button>
+    </div>
+
+    <section class="content">
+      <article class="card map-card">
+        <div class="map-head">
+          <h2>Aquiraz (CE) · Rede de instituições por situação do cadastro</h2>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="map-wrap" id="mapWrap">
+          <svg id="map" viewBox="0 0 1120 1100" role="img" aria-label="Mapa de Aquiraz com as instituições cadastradas, coloridas pela situação do cadastro">
+            <defs>
+              <pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="12" height="12" fill="var(--map-zone)"/>
+                <line x1="0" y1="0" x2="0" y2="12" stroke="var(--map-hatch)" stroke-width="2.2" opacity=".55"/>
+              </pattern>
+              <pattern id="dune" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="12" height="12" fill="var(--map-beach)"/>
+                <line x1="0" y1="0" x2="0" y2="12" stroke="var(--map-dune)" stroke-width="2.2" opacity=".7"/>
+              </pattern>
+            </defs>
+
+            <rect width="1120" height="1100" fill="var(--map-land)"/>
+
+            <!-- zonas de vegetação / áreas rurais -->
+            <ellipse cx="250" cy="830" rx="230" ry="125" fill="var(--map-zone)"/>
+            <ellipse cx="770" cy="960" rx="220" ry="105" fill="var(--map-zone)"/>
+            <ellipse cx="560" cy="650" rx="160" ry="80" fill="var(--map-zone)"/>
+
+            <!-- áreas de proteção (hachura) -->
+            <ellipse cx="115" cy="335" rx="55" ry="85" transform="rotate(-25 115 335)" fill="url(#hatch)"/>
+            <ellipse cx="885" cy="835" rx="65" ry="40" transform="rotate(20 885 835)" fill="url(#hatch)"/>
+            <ellipse cx="415" cy="935" rx="55" ry="32" fill="url(#hatch)"/>
+
+            <!-- faixa de praia e oceano -->
+            <path d="M0,100 C180,200 350,305 520,400 C700,500 900,610 1120,730" fill="none" stroke="var(--map-beach)" stroke-width="56"/>
+            <path d="M190,265 l40,-30 l70,80 l-40,30 z" fill="url(#dune)"/>
+            <path d="M655,505 l45,-28 l70,90 l-45,28 z" fill="url(#dune)"/>
+            <path d="M0,0 H1120 V730 C900,610 700,500 520,400 C350,305 180,200 0,100 Z" fill="var(--map-ocean)"/>
+            <text x="880" y="350" fill="var(--map-ocean-label)" font-size="21" font-style="italic" letter-spacing="4" text-anchor="middle">Oceano Atlântico</text>
+
+            <!-- rios e lagoas -->
+            <path d="M135,175 C110,290 70,400 0,540" fill="none" stroke="var(--map-water)" stroke-width="7" stroke-linecap="round"/>
+            <text x="55" y="300" fill="var(--map-ocean-label)" font-size="14" font-style="italic" transform="rotate(-62 55 300)">Rio Pacoti</text>
+            <path d="M700,500 C630,620 575,720 535,820" fill="none" stroke="var(--map-water)" stroke-width="5" stroke-linecap="round"/>
+            <path d="M955,640 C915,700 950,820 965,905" fill="none" stroke="var(--map-water)" stroke-width="5" stroke-linecap="round"/>
+            <ellipse cx="500" cy="598" rx="38" ry="17" fill="var(--map-water)" transform="rotate(-12 500 598)"/>
+            <text x="455" y="635" fill="var(--map-label)" font-size="14" font-style="italic">Lagoa do Catu</text>
+            <ellipse cx="712" cy="712" rx="22" ry="13" fill="var(--map-water)"/>
+            <ellipse cx="300" cy="985" rx="28" ry="16" fill="var(--map-water)" transform="rotate(15 300 985)"/>
+
+            <!-- vias -->
+            <g fill="none" stroke-linecap="round">
+              <path d="M330,540 C300,700 285,850 275,1100" stroke="var(--map-road)" stroke-width="4"/>
+              <path d="M425,570 C440,720 430,900 415,1060" stroke="var(--map-road)" stroke-width="4"/>
+              <path d="M565,470 C600,560 635,640 650,720" stroke="var(--map-road)" stroke-width="4"/>
+              <path d="M330,540 C220,610 120,655 0,675" stroke="var(--map-road)" stroke-width="3"/>
+              <path d="M860,640 C820,740 770,800 745,830" stroke="var(--map-road)" stroke-width="4"/>
+              <path d="M0,205 C200,265 420,370 640,530" stroke="var(--map-road-edge)" stroke-width="10"/>
+              <path d="M0,205 C200,265 420,370 640,530" stroke="var(--map-road)" stroke-width="6"/>
+              <path d="M0,425 C200,455 380,520 520,600 C700,700 880,830 1120,1000" stroke="var(--map-road-edge)" stroke-width="12"/>
+              <path d="M0,425 C200,455 380,520 520,600 C700,700 880,830 1120,1000" stroke="var(--map-road)" stroke-width="7"/>
+            </g>
+            <g font-size="13" font-weight="600" fill="var(--map-label)">
+              <rect x="105" y="215" width="58" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="134" y="231" text-anchor="middle">CE-025</text>
+              <rect x="130" y="436" width="58" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="159" y="452" text-anchor="middle">CE-040</text>
+              <rect x="835" y="806" width="58" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="864" y="822" text-anchor="middle">CE-040</text>
+            </g>
+
+            <!-- limite municipal -->
+            <path d="M28,480 C0,700 110,950 380,1012 C650,1062 960,980 1112,722" fill="none" stroke="var(--map-road)" stroke-width="3.5" stroke-dasharray="14 10" opacity=".9"/>
+
+            <!-- municípios vizinhos -->
+            <g fill="var(--map-label-muted)" font-size="15" letter-spacing="1.5" font-weight="500">
+              <text x="22" y="150">FORTALEZA</text>
+              <text x="22" y="398">EUSÉBIO</text>
+              <text x="22" y="960">HORIZONTE</text>
+              <text x="1100" y="920" text-anchor="end">PINDORETAMA</text>
+            </g>
+
+            <!-- localidades -->
+            <g fill="var(--map-label)" font-size="16" font-weight="500">
+              <text x="300" y="190">Porto das Dunas</text>
+              <text x="410" y="350">Prainha</text>
+              <text x="305" y="488" font-weight="700" font-size="18">Aquiraz · Centro</text>
+              <text x="565" y="518" text-anchor="middle">Patacas</text>
+              <text x="690" y="618" text-anchor="middle">Iguape</text>
+              <text x="900" y="600">Presídio</text>
+              <text x="765" y="702" text-anchor="middle">Jacaúna</text>
+              <text x="650" y="782" text-anchor="middle">Lagoa da Encantada</text>
+              <text x="100" y="634" text-anchor="middle">Tapuio</text>
+              <text x="224" y="806" text-anchor="middle">Camará</text>
+              <text x="420" y="917" text-anchor="middle">Justiniano de Serpa</text>
+              <text x="610" y="947" text-anchor="middle">Tapera</text>
+            </g>
+
+            <g id="bubbles"></g>
+          </svg>
+
+          <div class="tag">Dados fictícios · demonstração</div>
+          <div class="scale" aria-hidden="true"><div class="bar"></div><div class="ticks"><span>0</span><span>2,5</span><span>5 km</span></div></div>
+          <div class="size-legend" aria-hidden="true">
+            <div class="ttl">Pessoas atendidas</div>
+            <div class="circles" id="sizeLegend"></div>
+          </div>
+          <div class="popup" id="popup" hidden></div>
+        </div>
+      </article>
+
+      <aside class="side">
+        <article class="card kpi">
+          <div class="eyebrow">Instituições aptas</div>
+          <div class="kpi-value" id="kAptas"></div>
+          <div class="stack" id="kStack" aria-hidden="true"></div>
+          <div class="kpi-sub" id="kAptasSub"></div>
+        </article>
+        <article class="card kpi">
+          <div class="eyebrow">Pessoas atendidas</div>
+          <div class="kpi-value" id="kPessoas"></div>
+          <div class="kpi-sub" id="kPessoasSub"></div>
+        </article>
+        <article class="card kpi">
+          <div class="eyebrow">Território com mais atendidos</div>
+          <div class="kpi-value" id="kTerritorio"></div>
+          <div class="kpi-sub" id="kTerritorioSub"></div>
+        </article>
+        <article class="card kpi">
+          <div class="eyebrow">Pendência mais comum</div>
+          <div class="kpi-value" id="kPendencia"></div>
+          <div class="kpi-sub" id="kPendenciaSub"></div>
+        </article>
+        <article class="card updates">
+          <h2>Atualizações recentes</h2>
+          <div class="upd-list" id="updates"></div>
+        </article>
+      </aside>
+    </section>
+    </div>
+
+    <!-- ===== Instituições registradas ===== -->
+    <div id="viewInstituicoes" hidden>
+      <div class="tb-filters" role="group" aria-label="Filtros da lista">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="tBusca" type="search" placeholder="Buscar por nome, CNPJ ou responsável" aria-label="Buscar instituição">
+        </label>
+        <div class="sel"><select id="tFiltro" aria-label="Filtrar por"></select></div>
+        <button class="toggle-inativos" id="tInativos" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9.9 4.2A10 10 0 0 1 12 4c7 0 10 8 10 8a17 17 0 0 1-2.2 3.4"/><path d="M6.6 6.6A17 17 0 0 0 2 12s3 8 10 8a9.7 9.7 0 0 0 5.4-1.6"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="m2 2 20 20"/></svg>
+          <span>Mostrar inativas</span>
+        </button>
+        <button class="btn-primary" id="btnNova">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nova instituição
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <label class="date-chip" title="Cadastradas a partir desta data">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <input id="tData" type="date" aria-label="Cadastradas a partir de">
+        </label>
+        <button class="icon-btn" id="tLimpar" aria-label="Limpar filtros da lista" title="Limpar filtros">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+        </button>
+        <div class="right">
+          <button class="icon-btn" data-soon aria-label="Exportar lista" title="Exportar lista">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+          </button>
+          <button class="icon-btn" id="btnColunas" aria-label="Escolher colunas" title="Escolher colunas" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg>
+          </button>
+          <button class="icon-btn" data-soon aria-label="Instituições arquivadas" title="Instituições arquivadas">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
+          </button>
+          <div class="menu" id="menuColunas" hidden></div>
+        </div>
+      </div>
+
+      <div class="table-area">
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="tbl">
+              <thead><tr id="tHead"></tr></thead>
+              <tbody id="tBody"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="pager"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawerTitle"></h2>
+      <div class="sub" id="drawerSub"></div>
+    </div>
+    <button class="icon-btn" id="drawerClose" aria-label="Fechar painel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</aside>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+/* ---------------------------------------------------------------------------
+   Registros de exemplo. Cada um usa os campos do formulário de cadastro:
+   nome_instituicao, tipo_instituicao, tipo_instituicao_outro, cnpj_instituicao,
+   endereco_completo, bairro, telefone_contato, nome_responsavel, publico_atendido,
+   numero_pessoas_atendidas, possui_estrutura_adequada, descricao_estrutura,
+   confirmo_anexo_documentos, servidor_responsavel, observacoes.
+   Campos do sistema: id, em_revisao, pendencia, atualizado_em e a posição (x, y) no mapa.
+--------------------------------------------------------------------------- */
+const TIPOS = { escola: "Escola", creche: "Creche", centro_assistencia: "Centro de Assistência Social", abrigo: "Abrigo", outro: "Outro" };
+const SITUACOES = {
+  apta: { label: "Apta", cor: "--st-apta" },
+  pendencia: { label: "Com pendência", curto: "Pendência", cor: "--st-pend" },
+  nao_apta: { label: "Não apta", cor: "--st-nao" },
+  revisao: { label: "Em revisão", cor: "--st-rev" },
+};
+
+const INSTITUICOES = [
+  { id: "INST-0231", nome_instituicao: "CRAS Prainha", sigla: ["CRAS", "Prainha"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "08.214.330/0004-12", endereco_completo: "Rua Vereador Raimundo Bezerra, 45", bairro: "Prainha", nome_responsavel: "Francisca Holanda", publico_atendido: "Famílias em situação de vulnerabilidade social", numero_pessoas_atendidas: 260, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-30", evento: "formulário validado", x: 460, y: 420 },
+  { id: "INST-0230", nome_instituicao: "CRAS Sede", sigla: ["CRAS Sede"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "08.214.330/0001-70", endereco_completo: "Av. Santos Dumont, 120", bairro: "Centro", nome_responsavel: "Maria de Fátima Souza", publico_atendido: "Famílias referenciadas no CadÚnico", numero_pessoas_atendidas: 420, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-29", evento: "documentos conferidos", x: 330, y: 545 },
+  { id: "INST-0228", nome_instituicao: "Escola Municipal Camará", sigla: ["E.M.", "Camará"], tipo_instituicao: "escola", cnpj_instituicao: "12.345.678/0001-90", endereco_completo: "Rua Principal do Camará, s/n", bairro: "Camará", nome_responsavel: "Antônio Barros", publico_atendido: "Crianças de 6 a 14 anos", numero_pessoas_atendidas: 300, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Certidão de regularidade vencida", servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-28", x: 224, y: 742 },
+  { id: "INST-0226", nome_instituicao: "AERA · Esportes Radicais", sigla: ["AERA"], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação esportiva comunitária", cnpj_instituicao: "21.908.442/0001-05", endereco_completo: "Rua da Praia, 300", bairro: "Prainha", nome_responsavel: "Rafael Monteiro", publico_atendido: "Jovens de 12 a 18 anos", numero_pessoas_atendidas: 120, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-26", evento: "cadastro aprovado", x: 362, y: 372 },
+  { id: "INST-0225", nome_instituicao: "Creche Raio de Sol", sigla: ["Creche"], tipo_instituicao: "creche", cnpj_instituicao: "30.112.587/0001-44", endereco_completo: "Travessa das Jangadas, 12", bairro: "Jacaúna", nome_responsavel: "Jéssica Farias", publico_atendido: "Crianças de 0 a 5 anos", numero_pessoas_atendidas: 110, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Certidão de regularidade vencida", servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-25", x: 768, y: 650 },
+  { id: "INST-0219", nome_instituicao: "Coletivo Cultural Patacas", sigla: [], tipo_instituicao: "outro", tipo_instituicao_outro: "Coletivo cultural", cnpj_instituicao: "40.556.019/0001-33", endereco_completo: "Rua do Farol, 8", bairro: "Patacas", nome_responsavel: "Raimundo Lopes", publico_atendido: "Jovens e adultos da comunidade", numero_pessoas_atendidas: 80, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, em_revisao: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-24", x: 565, y: 465 },
+  { id: "INST-0217", nome_instituicao: "Escola Municipal Justiniano de Serpa", sigla: ["E.M.", "J. Serpa"], tipo_instituicao: "escola", cnpj_instituicao: "12.345.678/0007-85", endereco_completo: "Rua São Francisco, 210", bairro: "Justiniano de Serpa", nome_responsavel: "Tereza Cristina Melo", publico_atendido: "Crianças e adolescentes do ensino fundamental", numero_pessoas_atendidas: 160, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Certidão de regularidade vencida", servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-22", x: 420, y: 862 },
+  { id: "INST-0214", nome_instituicao: "APREMACE", sigla: ["APRE", "MACE"], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação de pais e amigos", cnpj_instituicao: "05.778.901/0001-61", endereco_completo: "Estrada do Presídio, km 2", bairro: "Presídio", nome_responsavel: "Carlos Henrique Dias", publico_atendido: "Pessoas com deficiência e suas famílias", numero_pessoas_atendidas: 150, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-20", evento: "registro no CMDCA renovado", x: 862, y: 645 },
+  { id: "INST-0212", nome_instituicao: "Abrigo Lar Acolhedor", sigla: [], tipo_instituicao: "abrigo", cnpj_instituicao: "17.230.664/0001-02", endereco_completo: "Rua das Carnaúbas, 77", bairro: "Tapuio", nome_responsavel: "Rosângela Pinto", publico_atendido: "Crianças em medida de acolhimento", numero_pessoas_atendidas: 35, possui_estrutura_adequada: "nao", descricao_estrutura: "Necessita reforma no telhado e ampliação dos dormitórios", confirmo_anexo_documentos: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-09-18", x: 100, y: 590 },
+  { id: "INST-0209", nome_instituicao: "CRAS Indígena Jenipapo-Kanindé", sigla: ["CRAS", "Indígena"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "08.214.330/0006-84", endereco_completo: "Aldeia Lagoa Encantada, s/n", bairro: "Lagoa da Encantada", nome_responsavel: "Cacique Irê Kanindé", publico_atendido: "Famílias indígenas do território", numero_pessoas_atendidas: 210, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-15", evento: "documentos conferidos", x: 650, y: 722 },
+  { id: "INST-0206", nome_instituicao: "Escola Municipal Nova Esperança", sigla: ["E.M.", "Centro"], tipo_instituicao: "escola", cnpj_instituicao: "12.345.678/0003-51", endereco_completo: "Rua das Flores, 120", bairro: "Centro", nome_responsavel: "Paulo Sérgio Nunes", publico_atendido: "Crianças de 4 a 10 anos", numero_pessoas_atendidas: 180, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-12", evento: "cadastro aprovado", x: 428, y: 572 },
+  { id: "INST-0204", nome_instituicao: "Creche Pequeno Príncipe", sigla: ["Creche"], tipo_instituicao: "creche", cnpj_instituicao: "33.401.218/0001-27", endereco_completo: "Rua Coronel Alves, 54", bairro: "Centro", nome_responsavel: "Helena Moura", publico_atendido: "Crianças de 0 a 3 anos", numero_pessoas_atendidas: 95, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, em_revisao: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-09-10", x: 258, y: 462 },
+  { id: "INST-0201", nome_instituicao: "Escola Municipal do Iguape", sigla: ["E.M.", "Iguape"], tipo_instituicao: "escola", cnpj_instituicao: "12.345.678/0005-13", endereco_completo: "Rua do Iguape, 400", bairro: "Iguape", nome_responsavel: "Francisco Nogueira", publico_atendido: "Crianças e adolescentes de 6 a 15 anos", numero_pessoas_atendidas: 190, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-06", evento: "cadastro aprovado", x: 690, y: 562 },
+  { id: "INST-0198", nome_instituicao: "Casa de Passagem Tapera", sigla: [], tipo_instituicao: "abrigo", cnpj_instituicao: "17.230.664/0002-93", endereco_completo: "Sítio Tapera, s/n", bairro: "Tapera", nome_responsavel: "Marta Rodrigues", publico_atendido: "Adolescentes em acolhimento provisório", numero_pessoas_atendidas: 40, possui_estrutura_adequada: "nao", descricao_estrutura: "Prédio cedido sem acessibilidade", confirmo_anexo_documentos: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-02", x: 610, y: 902 },
+  { id: "INST-0187", nome_instituicao: "Associação Comunitária Viver Bem", sigla: [], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação de moradores", cnpj_instituicao: "26.884.120/0001-09", endereco_completo: "Rua do Mercado, 15", bairro: "Centro", nome_responsavel: "José Wilson Feitosa", publico_atendido: "Idosos da comunidade", numero_pessoas_atendidas: 60, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-08-14", ativo: false, observacoes: "Instituição encerrou as atividades em agosto de 2026" },
+];
+
+// Completa os campos do formulário que não variam no exemplo
+const DATAS_CADASTRO = ["2026-09-12", "2026-08-03", "2026-09-01", "2026-07-21", "2026-08-30", "2026-09-17", "2026-07-08", "2026-06-25", "2026-08-11", "2026-06-02", "2026-05-19", "2026-08-22", "2026-05-06", "2026-07-30", "2026-03-10"];
+INSTITUICOES.forEach((r, i) => {
+  r.ativo = r.ativo !== false;
+  r.telefone_contato = r.telefone_contato || `(85) 9${String(8100 + i * 137).slice(0, 4)}-${String(2300 + i * 419).slice(0, 4)}`;
+  r.descricao_estrutura = r.descricao_estrutura || (r.possui_estrutura_adequada === "sim" ? "Prédio próprio em bom estado, com salas de atendimento, cozinha e banheiros acessíveis" : "");
+  r.observacoes = r.observacoes || "";
+  r.data_cadastro = r.data_cadastro || DATAS_CADASTRO[i % DATAS_CADASTRO.length];
+});
+// posição de referência de cada bairro no mapa (para novos cadastros)
+const POS_BAIRRO = {};
+INSTITUICOES.forEach(r => { if (r.x != null && !POS_BAIRRO[r.bairro]) POS_BAIRRO[r.bairro] = { x: r.x, y: r.y }; });
+const noMapa = () => INSTITUICOES.filter(r => r.ativo && r.x != null);
+
+// Regra da situação a partir das respostas do formulário
+function situacao(r) {
+  if (r.em_revisao) return "revisao";
+  if (r.possui_estrutura_adequada === "nao") return "nao_apta";
+  if (r.pendencia || !r.confirmo_anexo_documentos) return "pendencia";
+  return "apta";
+}
+function motivo(r) {
+  const s = situacao(r);
+  if (s === "nao_apta") return "Estrutura física inadequada";
+  if (s === "pendencia") return r.pendencia || "Documentos não anexados";
+  return null;
+}
+function evento(r) {
+  const s = situacao(r);
+  if (s === "revisao") return "aguardando análise do servidor";
+  if (s === "nao_apta") return "estrutura física inadequada";
+  if (s === "pendencia") return (r.pendencia || "documentos não anexados").toLowerCase();
+  return r.evento || "cadastro aprovado";
+}
+
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString("pt-BR");
+const raio = n => 14 + Math.sqrt(n) * 1.6;
+const NS = "http://www.w3.org/2000/svg";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+// opções dos filtros
+const opts = (el, ph, pares) => el.innerHTML = `<option value="">${ph}</option>` + pares.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+opts($("fTipo"), "Tipo de instituição", Object.entries(TIPOS));
+opts($("fBairro"), "Território", Object.keys(POS_BAIRRO).sort().map(b => [b, b]));
+opts($("fEstrutura"), "Estrutura física", [["sim", "Estrutura adequada"], ["nao", "Estrutura inadequada"]]);
+opts($("fSituacao"), "Situação", Object.entries(SITUACOES).map(([k, v]) => [k, v.label]));
+
+// legenda de tamanho
+$("sizeLegend").innerHTML = [[50, "50"], [150, "150"], [400, "400+"]]
+  .map(([n, l]) => { const d = Math.round(raio(n) * 2 * 0.62); return `<div class="c"><b style="width:${d}px;height:${d}px"></b>${l}</div>`; }).join("");
+
+// bolhas
+const gB = $("bubbles");
+function desenharBolhas() {
+gB.innerHTML = "";
+noMapa().sort((a, b) => b.numero_pessoas_atendidas - a.numero_pessoas_atendidas).forEach(r => {
+  const s = situacao(r), cor = `var(${SITUACOES[s].cor})`, rr = raio(r.numero_pessoas_atendidas);
+  const g = document.createElementNS(NS, "g");
+  g.setAttribute("class", "bubble");
+  g.setAttribute("tabindex", "0");
+  g.setAttribute("role", "button");
+  g.setAttribute("aria-label", `${r.nome_instituicao}, ${SITUACOES[s].label}, ${r.numero_pessoas_atendidas} pessoas atendidas`);
+  g.dataset.id = r.id;
+  const linhas = r.sigla.length && rr >= 30 ? r.sigla : [];
+  g.innerHTML = `
+    <circle cx="${r.x}" cy="${r.y}" r="${rr + 14}" fill="${cor}" opacity=".22"/>
+    <circle class="core" cx="${r.x}" cy="${r.y}" r="${rr}" fill="${cor}"/>
+    ${linhas.map((t, i) => `<text x="${r.x}" y="${r.y + (i - (linhas.length - 1) / 2) * 17 + 5}" text-anchor="middle" fill="#fff" font-size="${linhas.length > 1 ? 14 : 15}" font-weight="700">${esc(t)}</text>`).join("")}
+    ${r.id === "INST-0230" ? `<text x="${r.x}" y="${r.y + 22}" text-anchor="middle" fill="#fff" font-size="13">${r.numero_pessoas_atendidas} atend.</text>` : ""}`;
+  if (r.id === "INST-0230") g.querySelector("text").setAttribute("y", r.y - 2);
+  g.addEventListener("click", () => selecionar(r.id));
+  g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selecionar(r.id); } });
+  gB.appendChild(g);
+});
+}
+desenharBolhas();
+
+let selecionado = null;
+
+function selecionar(id) {
+  selecionado = id;
+  document.querySelectorAll(".bubble").forEach(b => b.classList.toggle("sel", b.dataset.id === id));
+  const r = INSTITUICOES.find(x => x.id === id);
+  const pop = $("popup");
+  if (!r) { pop.hidden = true; return; }
+  const s = situacao(r);
+  const chk = (ok, txt) => `<span class="${ok ? "ok" : "x"}">${txt} ${ok ? "✓" : "✕"}</span>`;
+  const tipo = r.tipo_instituicao === "outro" ? r.tipo_instituicao_outro : TIPOS[r.tipo_instituicao];
+  pop.innerHTML = `
+    <button class="close" aria-label="Fechar detalhes">×</button>
+    <h3>${esc(r.nome_instituicao)}</h3>
+    <div class="sub">${esc(tipo)} · ${esc(r.bairro)} · ${fmt(r.numero_pessoas_atendidas)} atendidos</div>
+    <div class="checks">
+      <span class="pill ${s}">${SITUACOES[s].curto || SITUACOES[s].label}</span>
+      ${chk(r.possui_estrutura_adequada === "sim", "Estrutura")}
+      ${chk(r.confirmo_anexo_documentos && !r.pendencia, "Documentos")}
+    </div>
+    <div class="line">CNPJ ${r.cnpj_instituicao}</div>
+    <div class="line">Responsável: ${esc(r.nome_responsavel)}</div>
+    <div class="line">Público: ${esc(r.publico_atendido)}</div>
+    <div class="note">${s === "apta" ? "Habilitada para receber recursos" : esc(motivo(r) || "Aguardando análise de " + r.servidor_responsavel)}</div>`;
+  pop.querySelector(".close").addEventListener("click", () => selecionar(null));
+  pop.hidden = false;
+  posicionarPopup();
+}
+
+function posicionarPopup() {
+  const pop = $("popup");
+  const r = INSTITUICOES.find(x => x.id === selecionado);
+  if (!r || pop.hidden) return;
+  const wrap = $("mapWrap").getBoundingClientRect();
+  const k = wrap.width / 1120;
+  const px = r.x * k, py = r.y * k, rr = (raio(r.numero_pessoas_atendidas) + 14) * k;
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = px + rr * .6, top = py - ph - rr * .6;
+  if (top < 8) top = py + rr + 8;
+  if (top + ph > wrap.height - 8) top = Math.max(8, py - ph - rr);
+  left = Math.min(Math.max(8, left), wrap.width - pw - 8);
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
+}
+
+function filtrados() {
+  const q = $("fBusca").value.trim().toLowerCase();
+  const qd = q.replace(/\D/g, "");
+  const t = $("fTipo").value, b = $("fBairro").value, e = $("fEstrutura").value, s = $("fSituacao").value;
+  ["fTipo", "fBairro", "fEstrutura", "fSituacao"].forEach(id => $(id).classList.toggle("active", !!$(id).value));
+  $("limpar").hidden = !(q || t || b || e || s);
+  return noMapa().filter(r =>
+    (!q || r.nome_instituicao.toLowerCase().includes(q) || (qd && r.cnpj_instituicao.replace(/\D/g, "").includes(qd))) &&
+    (!t || r.tipo_instituicao === t) && (!b || r.bairro === b) &&
+    (!e || r.possui_estrutura_adequada === e) && (!s || situacao(r) === s));
+}
+
+function render() {
+  const rows = filtrados();
+  const ids = new Set(rows.map(r => r.id));
+  document.querySelectorAll(".bubble").forEach(g => g.classList.toggle("dim", !ids.has(g.dataset.id)));
+  if (selecionado && !ids.has(selecionado)) selecionar(null);
+
+  const cont = { apta: 0, pendencia: 0, nao_apta: 0, revisao: 0 };
+  rows.forEach(r => cont[situacao(r)]++);
+  const total = rows.length;
+
+  $("legend").innerHTML = Object.entries(SITUACOES).map(([k, v]) => `<span><i style="background:var(${v.cor})"></i>${v.label} (${cont[k]})</span>`).join("");
+
+  // Aptas
+  $("kAptas").innerHTML = `${cont.apta} de ${total}<small>${total ? Math.round(cont.apta / total * 100) : 0}% da rede mapeada</small>`;
+  $("kStack").innerHTML = Object.entries(SITUACOES).map(([k, v]) => `<span style="width:${total ? cont[k] / total * 100 : 0}%;background:var(${v.cor})"></span>`).join("");
+  $("kAptasSub").textContent = `${cont.pendencia} com pendência · ${cont.revisao} em revisão · ${cont.nao_apta} não aptas`;
+
+  // Pessoas atendidas
+  const pessoas = rows.reduce((a, r) => a + r.numero_pessoas_atendidas, 0);
+  const aptasP = rows.filter(r => situacao(r) === "apta").reduce((a, r) => a + r.numero_pessoas_atendidas, 0);
+  $("kPessoas").textContent = fmt(pessoas);
+  $("kPessoasSub").textContent = total ? `${fmt(aptasP)} em instituições aptas · ${total} instituições` : "Nenhuma instituição nos filtros";
+
+  // Território
+  const porB = {};
+  rows.forEach(r => { porB[r.bairro] = porB[r.bairro] || { p: 0, n: 0 }; porB[r.bairro].p += r.numero_pessoas_atendidas; porB[r.bairro].n++; });
+  const topB = Object.entries(porB).sort((a, b) => b[1].p - a[1].p)[0];
+  $("kTerritorio").textContent = topB ? topB[0] : "–";
+  $("kTerritorioSub").textContent = topB ? `${fmt(topB[1].p)} pessoas em ${topB[1].n} ${topB[1].n > 1 ? "instituições" : "instituição"}` : "Sem dados nos filtros";
+
+  // Pendência
+  const porM = {};
+  rows.forEach(r => { const m = motivo(r); if (m) porM[m] = (porM[m] || 0) + 1; });
+  const topM = Object.entries(porM).sort((a, b) => b[1] - a[1])[0];
+  $("kPendencia").textContent = topM ? topM[0] : "Nenhuma";
+  $("kPendenciaSub").textContent = topM
+    ? `${topM[1]} ${topM[1] > 1 ? "instituições" : "instituição"} · ${topM[0].startsWith("Estrutura") ? "avaliar reforma ou adequação" : "regularizar para habilitar"}`
+    : "Todas as instituições filtradas estão regulares";
+
+  // Atualizações
+  const ult = [...rows].sort((a, b) => b.atualizado_em.localeCompare(a.atualizado_em)).slice(0, 4);
+  $("updates").innerHTML = ult.length ? ult.map(r => {
+    const s = situacao(r);
+    return `<button class="upd" data-id="${r.id}">
+      <div class="row"><span class="id">${r.id}</span><span class="pill ${s}">${SITUACOES[s].curto || SITUACOES[s].label}</span></div>
+      <div class="desc">${esc(r.nome_instituicao)} · ${esc(evento(r))}</div>
+    </button>`;
+  }).join("") : `<div class="empty">Nenhuma atualização para os filtros selecionados.</div>`;
+  document.querySelectorAll(".upd").forEach(b => b.addEventListener("click", () => selecionar(b.dataset.id)));
+}
+
+["fTipo", "fBairro", "fEstrutura", "fSituacao"].forEach(id => $(id).addEventListener("change", render));
+$("fBusca").addEventListener("input", render);
+$("limpar").addEventListener("click", () => {
+  $("fBusca").value = ""; ["fTipo", "fBairro", "fEstrutura", "fSituacao"].forEach(id => $(id).value = "");
+  render();
+});
+// Tema: abre no modo claro (como a referência) e lembra a escolha do usuário neste navegador
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const lembrar = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+function aplicarTema(t) {
+  document.documentElement.dataset.theme = t;
+  const prox = t === "dark" ? "Mudar para o modo claro" : "Mudar para o modo escuro";
+  $("toggleTheme").setAttribute("aria-label", prox);
+  $("toggleTheme").title = prox;
+}
+function aplicarContraste(alto) {
+  const el = document.documentElement;
+  if (alto) el.dataset.contrast = "high"; else delete el.dataset.contrast;
+  $("toggleContrast").setAttribute("aria-pressed", alto);
+}
+aplicarTema(lembrar("caprec-tema") === "dark" ? "dark" : "light");
+aplicarContraste(lembrar("caprec-contraste") === "alto");
+$("toggleTheme").addEventListener("click", () => {
+  const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  aplicarTema(t); guardar("caprec-tema", t);
+});
+$("toggleContrast").addEventListener("click", () => {
+  const alto = document.documentElement.dataset.contrast !== "high";
+  aplicarContraste(alto); guardar("caprec-contraste", alto ? "alto" : "normal");
+});
+$("toggleSidebar").addEventListener("click", () => {
+  document.body.classList.toggle("collapsed");
+  setTimeout(posicionarPopup, 50);
+});
+addEventListener("resize", posicionarPopup);
+
+/* =========================================================================
+   Instituições registradas (lista tabular)
+   ========================================================================= */
+const fmtData = iso => { const [a, m, d] = iso.split("-"); return `${d}/${m}/${a.slice(2)}`; };
+const statusDe = r => r.ativo ? situacao(r) : "inativa";
+const STATUS_LABEL = { apta: "Apta", pendencia: "Com pendência", nao_apta: "Não apta", revisao: "Em revisão", inativa: "Inativa" };
+const tipoTexto = r => r.tipo_instituicao === "outro" ? `Outro · ${r.tipo_instituicao_outro}` : TIPOS[r.tipo_instituicao];
+
+const COLUNAS = [
+  { k: "status", label: "Status", fixa: true, val: r => STATUS_LABEL[statusDe(r)], cel: r => `<span class="status ${statusDe(r)}">${STATUS_LABEL[statusDe(r)]}</span>` },
+  { k: "nome", label: "Nome", fixa: true, val: r => r.nome_instituicao, cel: r => `${esc(r.nome_instituicao)}<span class="sub">${r.id}</span>` },
+  { k: "cnpj", label: "CNPJ", val: r => r.cnpj_instituicao, cls: "mono" },
+  { k: "tipo", label: "Tipo", val: r => tipoTexto(r) },
+  { k: "bairro", label: "Bairro", val: r => r.bairro },
+  { k: "responsavel", label: "Responsável", val: r => r.nome_responsavel },
+  { k: "atendidos", label: "Atendidos", val: r => r.numero_pessoas_atendidas, cel: r => fmt(r.numero_pessoas_atendidas), cls: "num" },
+  { k: "telefone", label: "Telefone", val: r => r.telefone_contato, oculta: true, cls: "mono" },
+  { k: "servidor", label: "Servidor responsável", val: r => r.servidor_responsavel, oculta: true },
+  { k: "cadastro", label: "Data de cadastro", val: r => r.data_cadastro, cel: r => fmtData(r.data_cadastro), cls: "mono" },
+];
+const colVisivel = Object.fromEntries(COLUNAS.map(c => [c.k, !c.oculta]));
+const POR_PAGINA = 8;
+const tab = { pagina: 1, ordem: "cadastro", dir: -1, inativos: false };
+
+$("tFiltro").innerHTML = `<option value="">Filtrar por</option>
+  <optgroup label="Situação">${Object.entries(SITUACOES).map(([k, v]) => `<option value="s:${k}">${v.label}</option>`).join("")}</optgroup>
+  <optgroup label="Tipo de instituição">${Object.entries(TIPOS).map(([k, v]) => `<option value="t:${k}">${v}</option>`).join("")}</optgroup>
+  <optgroup label="Estrutura física"><option value="e:sim">Estrutura adequada</option><option value="e:nao">Estrutura inadequada</option></optgroup>`;
+
+function linhasTabela() {
+  const q = $("tBusca").value.trim().toLowerCase(), qd = q.replace(/\D/g, "");
+  const [fk, fv] = ($("tFiltro").value || ":").split(":");
+  const desde = $("tData").value;
+  $("tFiltro").classList.toggle("active", !!fv);
+  const rows = INSTITUICOES.filter(r =>
+    (tab.inativos || r.ativo) &&
+    (!q || r.nome_instituicao.toLowerCase().includes(q) || r.nome_responsavel.toLowerCase().includes(q) || (qd && r.cnpj_instituicao.replace(/\D/g, "").includes(qd))) &&
+    (!fv || (fk === "s" && r.ativo && situacao(r) === fv) || (fk === "t" && r.tipo_instituicao === fv) || (fk === "e" && r.possui_estrutura_adequada === fv)) &&
+    (!desde || r.data_cadastro >= desde));
+  const col = COLUNAS.find(c => c.k === tab.ordem);
+  return rows.sort((a, b) => {
+    const va = col.val(a), vb = col.val(b);
+    return (typeof va === "number" ? va - vb : String(va).localeCompare(String(vb), "pt-BR")) * tab.dir;
+  });
+}
+
+function renderTabela() {
+  const cols = COLUNAS.filter(c => colVisivel[c.k]);
+  $("tHead").innerHTML = cols.map(c => {
+    const ativa = tab.ordem === c.k;
+    return `<th class="${c.cls === "num" ? "num" : ""}" aria-sort="${ativa ? (tab.dir > 0 ? "ascending" : "descending") : "none"}">
+      <button data-ordem="${c.k}">${c.label}<span class="arrow" aria-hidden="true">${ativa ? (tab.dir > 0 ? "▲" : "▼") : "▾"}</span></button></th>`;
+  }).join("") + `<th><span class="sr" style="position:absolute;left:-9999px">Ações</span></th>`;
+  $("tHead").querySelectorAll("[data-ordem]").forEach(b => b.addEventListener("click", () => {
+    const k = b.dataset.ordem;
+    tab.dir = tab.ordem === k ? -tab.dir : 1; tab.ordem = k; tab.pagina = 1; renderTabela();
+  }));
+
+  const rows = linhasTabela();
+  const paginas = Math.max(1, Math.ceil(rows.length / POR_PAGINA));
+  tab.pagina = Math.min(tab.pagina, paginas);
+  const ini = (tab.pagina - 1) * POR_PAGINA, pag = rows.slice(ini, ini + POR_PAGINA);
+
+  $("tBody").innerHTML = pag.length ? pag.map(r => `
+    <tr class="${r.ativo ? "" : "inativo"}">
+      ${cols.map(c => `<td class="${c.cls || ""}">${c.cel ? c.cel(r) : esc(c.val(r))}</td>`).join("")}
+      <td style="text-align:right"><button class="open-btn" data-abrir="${r.id}" aria-label="Abrir cadastro de ${esc(r.nome_instituicao)}" title="Abrir cadastro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+      </button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="${cols.length + 1}" class="tbl-empty">Nenhuma instituição encontrada. Ajuste a busca ou os filtros.</td></tr>`;
+  $("tBody").querySelectorAll("[data-abrir]").forEach(b => b.addEventListener("click", () => abrirDetalhe(b.dataset.abrir)));
+
+  const fim = Math.min(ini + POR_PAGINA, rows.length);
+  $("pager").innerHTML = `
+    <span>${rows.length ? `${ini + 1}–${fim} de ${rows.length}` : "0 de 0"}</span>
+    <button data-pg="${tab.pagina - 1}" ${tab.pagina === 1 ? "disabled" : ""}>‹ Anterior</button>
+    <span class="pages">${[...Array(paginas)].map((_, i) => `<button data-pg="${i + 1}" ${i + 1 === tab.pagina ? 'aria-current="page"' : ""}>${i + 1}</button>`).join("")}</span>
+    <button data-pg="${tab.pagina + 1}" ${tab.pagina === paginas ? "disabled" : ""}>Próximo ›</button>`;
+  $("pager").querySelectorAll("[data-pg]").forEach(b => b.addEventListener("click", () => { tab.pagina = +b.dataset.pg; renderTabela(); }));
+}
+
+["tBusca", "tFiltro", "tData"].forEach(id => $(id).addEventListener(id === "tBusca" ? "input" : "change", () => { tab.pagina = 1; renderTabela(); }));
+$("tInativos").addEventListener("click", () => {
+  tab.inativos = !tab.inativos;
+  $("tInativos").setAttribute("aria-pressed", tab.inativos);
+  $("tInativos").querySelector("span").textContent = tab.inativos ? "Ocultar inativas" : "Mostrar inativas";
+  tab.pagina = 1; renderTabela();
+});
+$("tLimpar").addEventListener("click", () => { $("tBusca").value = ""; $("tFiltro").value = ""; $("tData").value = ""; tab.pagina = 1; renderTabela(); });
+
+// menu de colunas
+$("menuColunas").innerHTML = COLUNAS.map(c => `<label><input type="checkbox" data-col="${c.k}" ${colVisivel[c.k] ? "checked" : ""} ${c.fixa ? "disabled" : ""}>${c.label}</label>`).join("");
+$("menuColunas").querySelectorAll("input").forEach(i => i.addEventListener("change", () => { colVisivel[i.dataset.col] = i.checked; renderTabela(); }));
+$("btnColunas").addEventListener("click", e => {
+  e.stopPropagation();
+  const m = $("menuColunas"); m.hidden = !m.hidden; $("btnColunas").setAttribute("aria-expanded", !m.hidden);
+});
+document.addEventListener("click", e => { if (!$("menuColunas").hidden && !$("menuColunas").contains(e.target)) { $("menuColunas").hidden = true; $("btnColunas").setAttribute("aria-expanded", "false"); } });
+
+/* ---------- avisos ---------- */
+let toastT;
+function aviso(txt) {
+  const t = $("toast"); t.textContent = txt; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3600);
+}
+document.querySelectorAll("[data-soon]").forEach(el => el.addEventListener("click", e => { e.preventDefault(); aviso("Esta função não faz parte deste modelo."); }));
+
+/* ---------- painel lateral ---------- */
+let ultimoFoco = null;
+function abrirPainel(titulo, sub, corpo, rodape) {
+  ultimoFoco = document.activeElement;
+  $("drawerTitle").textContent = titulo;
+  $("drawerSub").innerHTML = sub;
+  $("drawerBody").innerHTML = corpo;
+  $("drawerFoot").innerHTML = rodape;
+  $("drawer").hidden = $("scrim").hidden = false;
+  $("drawerBody").scrollTop = 0;
+  $("drawerClose").focus();
+}
+function fecharPainel() {
+  $("drawer").hidden = $("scrim").hidden = true;
+  if (ultimoFoco) ultimoFoco.focus();
+}
+$("drawerClose").addEventListener("click", fecharPainel);
+$("scrim").addEventListener("click", fecharPainel);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("drawer").hidden) fecharPainel(); });
+
+const kv = pares => `<dl class="kv">${pares.map(([k, v]) => `<dt>${k}</dt><dd>${v === "" || v == null ? '<span style="color:var(--fg-subtle)">Não informado</span>' : v}</dd>`).join("")}</dl>`;
+
+function abrirDetalhe(id) {
+  const r = INSTITUICOES.find(x => x.id === id);
+  const st = statusDe(r);
+  const docsOk = r.confirmo_anexo_documentos && !r.pendencia;
+  abrirPainel(r.nome_instituicao,
+    `${r.id} · cadastrada em ${fmtData(r.data_cadastro)} &nbsp; <span class="pill ${st === "inativa" ? "" : st}">${STATUS_LABEL[st]}</span>`,
+    `<section class="sec"><h3>Identificação da instituição <span>· página 1</span></h3>${kv([
+        ["Nome da instituição", esc(r.nome_instituicao)],
+        ["Tipo de instituição", esc(TIPOS[r.tipo_instituicao])],
+        ...(r.tipo_instituicao === "outro" ? [["Descrição do tipo", esc(r.tipo_instituicao_outro)]] : []),
+        ["CNPJ", r.cnpj_instituicao]])}</section>
+     <section class="sec"><h3>Contato e responsável <span>· página 2</span></h3>${kv([
+        ["Endereço completo", esc(r.endereco_completo)],
+        ["Bairro", esc(r.bairro)],
+        ["Telefone para contato", r.telefone_contato],
+        ["Responsável pela instituição", esc(r.nome_responsavel)]])}</section>
+     <section class="sec"><h3>Atendimento e estrutura <span>· página 3</span></h3>${kv([
+        ["Público atendido", esc(r.publico_atendido)],
+        ["Pessoas atendidas atualmente", fmt(r.numero_pessoas_atendidas)],
+        ["Estrutura adequada para expansão", r.possui_estrutura_adequada === "sim" ? '<span class="pill apta">Sim</span>' : '<span class="pill nao_apta">Não</span>'],
+        ["Descrição da estrutura física", esc(r.descricao_estrutura)]])}</section>
+     <section class="sec"><h3>Documentação e finalização <span>· página 4</span></h3>${kv([
+        ["Anexo dos documentos", r.confirmo_anexo_documentos ? "Confirmado · estatuto social, CNPJ, certidão de regularidade" : "Não confirmado"],
+        ["Situação dos documentos", docsOk ? '<span class="pill apta">Regulares</span>' : `<span class="pill pendencia">${esc(r.pendencia || "Pendentes")}</span>`],
+        ["Servidor responsável pelo cadastro", esc(r.servidor_responsavel)],
+        ["Observações", esc(r.observacoes)]])}</section>`,
+    `${r.ativo && r.x != null ? `<button class="btn-secondary" id="verMapa">Ver no mapa</button>` : ""}<button class="btn-primary" id="fecharDet">Fechar</button>`);
+  $("fecharDet").addEventListener("click", fecharPainel);
+  if ($("verMapa")) $("verMapa").addEventListener("click", () => { fecharPainel(); location.hash = "mapa"; mostrarView("mapa"); selecionar(r.id); });
+}
+
+/* ---------- formulário de nova instituição (campos do formulário oficial) ---------- */
+function campo(id, titulo, tipo, ph, extra = "") {
+  const ctrl = tipo === "textarea" ? `<textarea id="${id}" placeholder="${ph}" ${extra}></textarea>` : `<input type="${tipo}" id="${id}" placeholder="${ph}" ${extra}>`;
+  return `<label class="field" data-f="${id}"><span>${titulo}</span>${ctrl}<span class="err" hidden></span></label>`;
+}
+$("btnNova").addEventListener("click", () => {
+  abrirPainel("Nova instituição", "Preencha as 4 etapas do cadastro. Campos com * são obrigatórios.",
+    `<form id="formNova" novalidate>
+      <section class="sec"><h3>Identificação da instituição <span>· página 1</span></h3>
+        ${campo("n_nome", "Nome da instituição *", "text", "Ex.: Escola Municipal Nova Esperança")}
+        <label class="field" data-f="n_tipo"><span>Tipo de instituição *</span>
+          <select id="n_tipo"><option value="">Selecione</option>${Object.entries(TIPOS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>
+          <span class="err" hidden></span></label>
+        <div id="wrapOutro" hidden>${campo("n_tipo_outro", "Descreva o tipo de instituição *", "text", "Ex.: Associação comunitária de reabilitação")}</div>
+        ${campo("n_cnpj", "CNPJ da instituição *", "text", "Ex.: 12.345.678/0001-90", 'inputmode="numeric" maxlength="18"')}
+      </section>
+      <section class="sec"><h3>Contato e responsável <span>· página 2</span></h3>
+        ${campo("n_endereco", "Endereço completo *", "text", "Ex.: Rua das Flores, 120")}
+        ${campo("n_bairro", "Bairro *", "text", "Ex.: Prainha", 'list="listaBairros"')}
+        <datalist id="listaBairros">${Object.keys(POS_BAIRRO).sort().map(b => `<option value="${b}">`).join("")}</datalist>
+        ${campo("n_tel", "Telefone para contato *", "tel", "Ex.: (85) 99999-1234", 'inputmode="numeric" maxlength="15"')}
+        ${campo("n_resp", "Nome do responsável pela instituição *", "text", "Ex.: Maria de Fátima Souza")}
+      </section>
+      <section class="sec"><h3>Atendimento e estrutura <span>· página 3</span></h3>
+        ${campo("n_publico", "Público atendido *", "textarea", "Ex.: Crianças de 0 a 5 anos em situação de vulnerabilidade social")}
+        ${campo("n_num", "Número de pessoas atendidas atualmente *", "number", "Ex.: 120", 'min="0" step="1" inputmode="numeric"')}
+        <div class="field" data-f="n_estr"><span>A instituição possui estrutura física adequada para expansão do atendimento? *</span>
+          <div class="radio-row"><label><input type="radio" name="n_estr" value="sim"> Sim</label><label><input type="radio" name="n_estr" value="nao"> Não</label></div>
+          <span class="err" hidden></span></div>
+        ${campo("n_desc", "Descreva a estrutura física da instituição *", "textarea", "Ex.: Prédio próprio com 8 salas de aula; necessita reforma no telhado")}
+        <span class="hint" style="display:block;margin:-8px 0 12px;font-size:12.5px;color:var(--fg-muted)">Inclua também eventuais necessidades estruturais nesta descrição.</span>
+      </section>
+      <section class="sec"><h3>Documentação e finalização <span>· página 4</span></h3>
+        <div class="info-box">Anexe abaixo os documentos comprobatórios da instituição (estatuto social, CNPJ, certidão de regularidade).</div>
+        <div class="field" data-f="n_docs">
+          <label class="check"><input type="checkbox" id="n_docs"> Confirmo o anexo dos documentos *</label>
+          <input type="file" id="n_arquivos" multiple accept=".pdf,.jpg,.jpeg,.png" class="file-row" aria-label="Anexar documentos">
+          <span class="err" hidden></span></div>
+        ${campo("n_servidor", "Servidor responsável pelo cadastro *", "text", "Ex.: João Pedro Almeida")}
+        ${campo("n_obs", "Observações", "textarea", "Ex.: Instituição já recebeu recurso municipal em anos anteriores")}
+      </section>
+    </form>`,
+    `<button class="btn-secondary" id="cancelarNova">Cancelar</button><button class="btn-primary" id="salvarNova">Cadastrar instituição</button>`);
+
+  const tipo = $("n_tipo");
+  tipo.addEventListener("change", () => $("wrapOutro").hidden = tipo.value !== "outro");
+  $("n_cnpj").addEventListener("input", e => {
+    const d = e.target.value.replace(/\D/g, "").slice(0, 14);
+    e.target.value = d.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+  });
+  $("n_tel").addEventListener("input", e => {
+    const d = e.target.value.replace(/\D/g, "").slice(0, 11);
+    e.target.value = d.length > 10 ? d.replace(/^(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3") : d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4})/, (m, a, b, c) => (a ? `(${a}` : "") + (a.length === 2 ? ") " : "") + b + (c ? `-${c}` : ""));
+  });
+  $("cancelarNova").addEventListener("click", fecharPainel);
+  $("formNova").addEventListener("submit", e => e.preventDefault());
+  $("salvarNova").addEventListener("click", salvarNova);
+});
+
+function salvarNova() {
+  const v = id => ($(id).value || "").trim();
+  const estr = (document.querySelector('input[name="n_estr"]:checked') || {}).value;
+  const erros = {};
+  if (!v("n_nome")) erros.n_nome = "Informe o nome da instituição.";
+  if (!v("n_tipo")) erros.n_tipo = "Selecione o tipo de instituição.";
+  if (v("n_tipo") === "outro" && !v("n_tipo_outro")) erros.n_tipo_outro = "Descreva o tipo de instituição.";
+  if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(v("n_cnpj"))) erros.n_cnpj = "Informe o CNPJ completo no formato 00.000.000/0000-00.";
+  if (!v("n_endereco")) erros.n_endereco = "Informe o endereço.";
+  if (!v("n_bairro")) erros.n_bairro = "Informe o bairro.";
+  if (v("n_tel").replace(/\D/g, "").length < 10) erros.n_tel = "Informe o telefone com DDD.";
+  if (!v("n_resp")) erros.n_resp = "Informe o nome do responsável.";
+  if (!v("n_publico")) erros.n_publico = "Descreva o público atendido.";
+  if (!/^\d+$/.test(v("n_num"))) erros.n_num = "Use somente números.";
+  if (!estr) erros.n_estr = "Selecione Sim ou Não.";
+  if (!v("n_desc")) erros.n_desc = "Descreva a estrutura física.";
+  if (!$("n_docs").checked || !$("n_arquivos").files.length) erros.n_docs = "Anexe os documentos e marque a confirmação.";
+  if (!v("n_servidor")) erros.n_servidor = "Informe o servidor responsável.";
+
+  document.querySelectorAll("#formNova [data-f]").forEach(f => {
+    const msg = erros[f.dataset.f], err = f.querySelector(".err");
+    f.classList.toggle("invalid", !!msg);
+    if (err) { err.hidden = !msg; err.textContent = msg || ""; }
+  });
+  const primeiro = Object.keys(erros)[0];
+  if (primeiro) {
+    const alvo = document.querySelector(`#formNova [data-f="${primeiro}"]`);
+    alvo.scrollIntoView({ block: "center" });
+    (alvo.querySelector("input, select, textarea") || {}).focus?.();
+    aviso(`${Object.keys(erros).length} ${Object.keys(erros).length > 1 ? "campos precisam" : "campo precisa"} de correção.`);
+    return;
+  }
+
+  const maior = Math.max(...INSTITUICOES.map(r => +r.id.split("-")[1]));
+  const bairro = Object.keys(POS_BAIRRO).find(b => b.toLowerCase() === v("n_bairro").toLowerCase()) || v("n_bairro");
+  const pos = POS_BAIRRO[bairro];
+  const hoje = "2026-10-01";
+  const nova = {
+    id: `INST-${String(maior + 1).padStart(4, "0")}`, nome_instituicao: v("n_nome"), sigla: [],
+    tipo_instituicao: v("n_tipo"), tipo_instituicao_outro: v("n_tipo_outro"), cnpj_instituicao: v("n_cnpj"),
+    endereco_completo: v("n_endereco"), bairro, telefone_contato: v("n_tel"), nome_responsavel: v("n_resp"),
+    publico_atendido: v("n_publico"), numero_pessoas_atendidas: +v("n_num"), possui_estrutura_adequada: estr,
+    descricao_estrutura: v("n_desc"), confirmo_anexo_documentos: true, servidor_responsavel: v("n_servidor"),
+    observacoes: v("n_obs"), em_revisao: true, ativo: true, atualizado_em: hoje, data_cadastro: hoje,
+    ...(pos ? { x: pos.x + 46, y: pos.y + 40 } : {}),
+  };
+  INSTITUICOES.push(nova);
+  desenharBolhas(); render();
+  tab.ordem = "cadastro"; tab.dir = -1; tab.pagina = 1; renderTabela();
+  fecharPainel();
+  aviso(`${nova.nome_instituicao} cadastrada como ${nova.id}. Fica em revisão até a análise do servidor.`);
+}
+
+/* ---------- navegação entre seções ---------- */
+const VIEWS = {
+  mapa: { el: "viewMapa", titulo: "Mapa de instituições aptas", crumbs: "Dashboard <span aria-hidden='true'>›</span> <b>Mapa de instituições aptas</b>" },
+  instituicoes: { el: "viewInstituicoes", titulo: "Instituições", crumbs: "Instituições registradas <span aria-hidden='true'>›</span> <b>Instituições</b>" },
+};
+function mostrarView(v) {
+  if (!VIEWS[v]) v = "mapa";
+  Object.entries(VIEWS).forEach(([k, cfg]) => $(cfg.el).hidden = k !== v);
+  document.querySelectorAll("[data-view]").forEach(a => a.removeAttribute("aria-current"));
+  document.querySelectorAll("[data-view]").forEach(a => { if (a.dataset.view === v) a.setAttribute("aria-current", "page"); });
+  $("pageTitle").textContent = VIEWS[v].titulo;
+  $("crumbs").innerHTML = VIEWS[v].crumbs;
+  if (v === "instituicoes") renderTabela(); else posicionarPopup();
+}
+document.querySelectorAll("[data-view]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); history.replaceState(null, "", "#" + a.dataset.view); mostrarView(a.dataset.view); }));
+addEventListener("hashchange", () => mostrarView(location.hash.slice(1)));
+
+render();
+mostrarView(location.hash.slice(1) || "mapa");
+selecionar("INST-0226");
+</script>
+
+</html>
