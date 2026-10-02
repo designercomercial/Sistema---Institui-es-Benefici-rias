@@ -63,6 +63,13 @@
     --map-label-muted: #7a8689;
     --map-ocean-label: #5a7f93;
     --map-panel: rgba(255, 255, 255, .92);
+    --map-urban: #eceee9;
+    --map-street: #ffffff;
+    --map-border: #d9776b;
+    --map-park: #cfe8d3;
+    --map-airport: #dfe2f2;
+    --map-airport-strip: #c4c9e6;
+    --map-poi: #8d9499;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
@@ -74,7 +81,7 @@
       --st-apta-fg: #6fd3a5; --st-pend-fg: #f0c766; --st-nao-fg: #f19189; --st-rev-fg: #aeb6ff;
       --map-ocean: #1d4359; --map-land: #1c302b; --map-zone: #223a33; --map-beach: #4a4532; --map-water: #3f86ad;
       --map-road: #51605f; --map-road-edge: #2a3735; --map-hatch: #6c7a77; --map-dune: #8a7140;
-      --map-label: #d8e2e0; --map-label-muted: #8c9a97; --map-ocean-label: #8fb4c8; --map-panel: rgba(24, 35, 43, .92);
+      --map-label: #d8e2e0; --map-label-muted: #8c9a97; --map-ocean-label: #8fb4c8; --map-panel: rgba(24, 35, 43, .92); --map-urban: #1f2a2e; --map-street: #2c393d; --map-border: #c4685d; --map-park: #24433a; --map-airport: #2b3150; --map-airport-strip: #3d4470; --map-poi: #8d9a9f;
       color-scheme: dark;
     }
   }
@@ -86,7 +93,7 @@
     --st-apta-fg: #6fd3a5; --st-pend-fg: #f0c766; --st-nao-fg: #f19189; --st-rev-fg: #aeb6ff;
     --map-ocean: #1d4359; --map-land: #1c302b; --map-zone: #223a33; --map-beach: #4a4532; --map-water: #3f86ad;
     --map-road: #51605f; --map-road-edge: #2a3735; --map-hatch: #6c7a77; --map-dune: #8a7140;
-    --map-label: #d8e2e0; --map-label-muted: #8c9a97; --map-ocean-label: #8fb4c8; --map-panel: rgba(24, 35, 43, .92);
+    --map-label: #d8e2e0; --map-label-muted: #8c9a97; --map-ocean-label: #8fb4c8; --map-panel: rgba(24, 35, 43, .92); --map-urban: #1f2a2e; --map-street: #2c393d; --map-border: #c4685d; --map-park: #24433a; --map-airport: #2b3150; --map-airport-strip: #3d4470; --map-poi: #8d9a9f;
     color-scheme: dark;
   }
 
@@ -442,7 +449,7 @@
       </svg>
       <div class="brand-text">
         <div class="brand-name">CAPREC</div>
-        <div class="brand-sub">Captação de Recursos<br>Aquiraz · CE</div>
+        <div class="brand-sub">Captação de Recursos<br>Imperatriz · MA</div>
       </div>
     </div>
     <div class="brand-stripe" aria-hidden="true"></div>
@@ -506,6 +513,7 @@
 
     <div id="viewMapa">
     <div class="filters" role="group" aria-label="Filtros">
+      <div class="sel"><select id="fMunicipio" class="active" aria-label="Município"><option>Município: Imperatriz (MA)</option></select></div>
       <label class="search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input id="fBusca" type="search" placeholder="Buscar instituição ou CNPJ" aria-label="Buscar instituição ou CNPJ">
@@ -520,101 +528,123 @@
     <section class="content">
       <article class="card map-card">
         <div class="map-head">
-          <h2>Aquiraz (CE) · Rede de instituições por situação do cadastro</h2>
+          <h2>Imperatriz (MA) · Rede de instituições por situação do cadastro</h2>
           <div class="legend" id="legend"></div>
         </div>
         <div class="map-wrap" id="mapWrap">
-          <svg id="map" viewBox="0 0 1120 1100" role="img" aria-label="Mapa de Aquiraz com as instituições cadastradas, coloridas pela situação do cadastro">
+          <svg id="map" viewBox="0 0 1120 1100" role="img" aria-label="Mapa de Imperatriz com as instituições cadastradas, coloridas pela situação do cadastro">
             <defs>
-              <pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <rect width="12" height="12" fill="var(--map-zone)"/>
-                <line x1="0" y1="0" x2="0" y2="12" stroke="var(--map-hatch)" stroke-width="2.2" opacity=".55"/>
+              <pattern id="ruas" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(-6)">
+                <rect width="24" height="24" fill="var(--map-urban)"/>
+                <path d="M0 0H24M0 0V24" stroke="var(--map-street)" stroke-width="1.6"/>
               </pattern>
-              <pattern id="dune" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <rect width="12" height="12" fill="var(--map-beach)"/>
-                <line x1="0" y1="0" x2="0" y2="12" stroke="var(--map-dune)" stroke-width="2.2" opacity=".7"/>
-              </pattern>
+              <clipPath id="recorte"><rect width="1120" height="1100" rx="0"/></clipPath>
             </defs>
-
+            <g clip-path="url(#recorte)">
+            <!-- vegetação nas bordas -->
             <rect width="1120" height="1100" fill="var(--map-land)"/>
+            <!-- malha urbana -->
+            <path d="M40,0 H1085 C1060,300 1100,700 1075,1100 H320 C300,900 230,720 90,560 C40,500 20,460 0,440 V0 Z" fill="url(#ruas)"/>
 
-            <!-- zonas de vegetação / áreas rurais -->
-            <ellipse cx="250" cy="830" rx="230" ry="125" fill="var(--map-zone)"/>
-            <ellipse cx="770" cy="960" rx="220" ry="105" fill="var(--map-zone)"/>
-            <ellipse cx="560" cy="650" rx="160" ry="80" fill="var(--map-zone)"/>
+            <!-- lado do Tocantins -->
+            <path d="M0,445 C130,585 255,785 300,1100 H0 Z" fill="var(--map-land)"/>
+            <text x="22" y="950" fill="var(--map-label)" font-size="19" font-weight="600">Bela Vista</text>
+            <text x="22" y="975" fill="var(--map-label-muted)" font-size="13" letter-spacing="1.5">TOCANTINS</text>
 
-            <!-- áreas de proteção (hachura) -->
-            <ellipse cx="115" cy="335" rx="55" ry="85" transform="rotate(-25 115 335)" fill="url(#hatch)"/>
-            <ellipse cx="885" cy="835" rx="65" ry="40" transform="rotate(20 885 835)" fill="url(#hatch)"/>
-            <ellipse cx="415" cy="935" rx="55" ry="32" fill="url(#hatch)"/>
+            <!-- Rio Tocantins e divisa estadual -->
+            <path d="M-20,410 C110,545 250,760 300,1120" fill="none" stroke="var(--map-ocean)" stroke-width="78"/>
+            <path d="M-20,410 C110,545 250,760 300,1120" fill="none" stroke="var(--map-border)" stroke-width="1.6" stroke-dasharray="6 6"/>
+            <text x="78" y="585" fill="var(--map-ocean-label)" font-size="15" font-style="italic" letter-spacing="1" transform="rotate(58 78 585)">Rio Tocantins</text>
 
-            <!-- faixa de praia e oceano -->
-            <path d="M0,100 C180,200 350,305 520,400 C700,500 900,610 1120,730" fill="none" stroke="var(--map-beach)" stroke-width="56"/>
-            <path d="M190,265 l40,-30 l70,80 l-40,30 z" fill="url(#dune)"/>
-            <path d="M655,505 l45,-28 l70,90 l-45,28 z" fill="url(#dune)"/>
-            <path d="M0,0 H1120 V730 C900,610 700,500 520,400 C350,305 180,200 0,100 Z" fill="var(--map-ocean)"/>
-            <text x="880" y="350" fill="var(--map-ocean-label)" font-size="21" font-style="italic" letter-spacing="4" text-anchor="middle">Oceano Atlântico</text>
+            <!-- parques e praças -->
+            <ellipse cx="643" cy="872" rx="52" ry="26" fill="var(--map-park)"/>
+            <ellipse cx="828" cy="637" rx="28" ry="15" fill="var(--map-park)"/>
+            <ellipse cx="815" cy="692" rx="20" ry="12" fill="var(--map-park)"/>
+            <rect x="147" y="318" width="22" height="28" rx="2" fill="var(--map-park)"/>
+            <rect x="240" y="598" width="18" height="16" rx="2" fill="var(--map-park)"/>
 
-            <!-- rios e lagoas -->
-            <path d="M135,175 C110,290 70,400 0,540" fill="none" stroke="var(--map-water)" stroke-width="7" stroke-linecap="round"/>
-            <text x="55" y="300" fill="var(--map-ocean-label)" font-size="14" font-style="italic" transform="rotate(-62 55 300)">Rio Pacoti</text>
-            <path d="M700,500 C630,620 575,720 535,820" fill="none" stroke="var(--map-water)" stroke-width="5" stroke-linecap="round"/>
-            <path d="M955,640 C915,700 950,820 965,905" fill="none" stroke="var(--map-water)" stroke-width="5" stroke-linecap="round"/>
-            <ellipse cx="500" cy="598" rx="38" ry="17" fill="var(--map-water)" transform="rotate(-12 500 598)"/>
-            <text x="455" y="635" fill="var(--map-label)" font-size="14" font-style="italic">Lagoa do Catu</text>
-            <ellipse cx="712" cy="712" rx="22" ry="13" fill="var(--map-water)"/>
-            <ellipse cx="300" cy="985" rx="28" ry="16" fill="var(--map-water)" transform="rotate(15 300 985)"/>
+            <!-- riachos -->
+            <g fill="none" stroke="var(--map-water)" stroke-width="3" stroke-linecap="round">
+              <path d="M340,1080 C420,1000 480,900 560,880 C640,860 700,780 760,750 C860,700 960,660 1055,595"/>
+              <path d="M1055,595 C1020,540 1050,480 1075,418"/>
+              <path d="M833,898 C880,830 940,790 1013,748"/>
+            </g>
 
-            <!-- vias -->
+            <!-- aeroporto -->
+            <g transform="rotate(-34 623 655)">
+              <rect x="488" y="625" width="270" height="60" rx="30" fill="var(--map-airport)"/>
+              <line x1="518" y1="655" x2="728" y2="655" stroke="var(--map-airport-strip)" stroke-width="6" stroke-linecap="round"/>
+            </g>
+            <text x="575" y="640" fill="var(--map-label-muted)" font-size="13" font-style="italic" transform="rotate(-34 575 640)">Aeroporto</text>
+
+            <!-- avenidas -->
+            <g fill="none" stroke="var(--map-road)" stroke-width="5" stroke-linecap="round">
+              <path d="M190,75 L850,85"/>
+              <path d="M353,302 L443,232"/>
+              <path d="M463,302 L563,312"/>
+              <path d="M323,467 L443,367"/>
+              <path d="M463,507 C620,505 820,512 1023,522"/>
+              <path d="M733,307 L773,517"/>
+              <path d="M258,437 L323,607"/>
+            </g>
+            <g fill="var(--map-label-muted)" font-size="13" font-style="italic">
+              <text x="388" y="282" transform="rotate(-38 388 282)">Av. JK</text>
+              <text x="480" y="298">Av. Jacob</text>
+              <text x="325" y="470" transform="rotate(-40 325 470)">Av. Bernardo Sayão</text>
+            </g>
+
+            <!-- rodovias -->
             <g fill="none" stroke-linecap="round">
-              <path d="M330,540 C300,700 285,850 275,1100" stroke="var(--map-road)" stroke-width="4"/>
-              <path d="M425,570 C440,720 430,900 415,1060" stroke="var(--map-road)" stroke-width="4"/>
-              <path d="M565,470 C600,560 635,640 650,720" stroke="var(--map-road)" stroke-width="4"/>
-              <path d="M330,540 C220,610 120,655 0,675" stroke="var(--map-road)" stroke-width="3"/>
-              <path d="M860,640 C820,740 770,800 745,830" stroke="var(--map-road)" stroke-width="4"/>
-              <path d="M0,205 C200,265 420,370 640,530" stroke="var(--map-road-edge)" stroke-width="10"/>
-              <path d="M0,205 C200,265 420,370 640,530" stroke="var(--map-road)" stroke-width="6"/>
-              <path d="M0,425 C200,455 380,520 520,600 C700,700 880,830 1120,1000" stroke="var(--map-road-edge)" stroke-width="12"/>
-              <path d="M0,425 C200,455 380,520 520,600 C700,700 880,830 1120,1000" stroke="var(--map-road)" stroke-width="7"/>
+              <path id="br010" d="M452,-10 L456,660 C460,720 480,760 520,800 C600,880 660,980 735,1110" stroke="var(--map-road-edge)" stroke-width="13"/>
+              <path d="M452,-10 L456,660 C460,720 480,760 520,800 C600,880 660,980 735,1110" stroke="var(--map-road)" stroke-width="7"/>
+              <path d="M995,-10 C900,120 790,250 700,400 C640,460 540,500 462,555" stroke="var(--map-road-edge)" stroke-width="11"/>
+              <path d="M995,-10 C900,120 790,250 700,400 C640,460 540,500 462,555" stroke="var(--map-road)" stroke-width="6"/>
+              <path d="M0,995 C110,1005 220,1018 300,1030" stroke="var(--map-road-edge)" stroke-width="10"/>
+              <path d="M0,995 C110,1005 220,1018 300,1030" stroke="var(--map-road)" stroke-width="5"/>
             </g>
             <g font-size="13" font-weight="600" fill="var(--map-label)">
-              <rect x="105" y="215" width="58" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="134" y="231" text-anchor="middle">CE-025</text>
-              <rect x="130" y="436" width="58" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="159" y="452" text-anchor="middle">CE-040</text>
-              <rect x="835" y="806" width="58" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="864" y="822" text-anchor="middle">CE-040</text>
+              <rect x="438" y="497" width="40" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="458" y="513" text-anchor="middle">010</text>
+              <rect x="931" y="10" width="60" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="961" y="26" text-anchor="middle">MA-122</text>
+              <rect x="217" y="1020" width="60" height="22" rx="4" fill="var(--bg-card)" stroke="var(--map-road-edge)"/><text x="247" y="1036" text-anchor="middle">TO-126</text>
             </g>
 
-            <!-- limite municipal -->
-            <path d="M28,480 C0,700 110,950 380,1012 C650,1062 960,980 1112,722" fill="none" stroke="var(--map-road)" stroke-width="3.5" stroke-dasharray="14 10" opacity=".9"/>
-
-            <!-- municípios vizinhos -->
-            <g fill="var(--map-label-muted)" font-size="15" letter-spacing="1.5" font-weight="500">
-              <text x="22" y="150">FORTALEZA</text>
-              <text x="22" y="398">EUSÉBIO</text>
-              <text x="22" y="960">HORIZONTE</text>
-              <text x="1100" y="920" text-anchor="end">PINDORETAMA</text>
+            <!-- bairros -->
+            <g fill="var(--map-label)" font-size="15" font-weight="600" letter-spacing="1.6" text-anchor="middle">
+              <text x="304" y="90">VILA MACEDO</text>
+              <text x="479" y="90">COCO GRANDE</text>
+              <text x="63" y="222">RES. CIDADE</text><text x="63" y="240">JARDIM</text>
+              <text x="276" y="274">BOM SUCESSO</text>
+              <text x="650" y="199">VILA CAFETEIRA</text>
+              <text x="880" y="265">PARQUE</text><text x="880" y="283">ALVORADA II</text>
+              <text x="129" y="365">SANTA INÊS</text>
+              <text x="219" y="406">NOVA</text><text x="219" y="424">IMPERATRIZ</text>
+              <text x="219" y="592" font-size="19">CENTRO</text>
+              <text x="404" y="672">JARDIM</text><text x="404" y="690">SÃO LUÍS</text>
+              <text x="875" y="522">VILA FIQUENE</text>
+              <text x="633" y="697">PARQUE</text><text x="633" y="715">ALVORADA</text>
+              <text x="373" y="844">BEIRA RIO</text>
+              <text x="558" y="884">BACURI</text>
+              <text x="458" y="974">PARQUE</text><text x="458" y="992">ANHANGUERA</text>
             </g>
 
-            <!-- localidades -->
-            <g fill="var(--map-label)" font-size="16" font-weight="500">
-              <text x="300" y="190">Porto das Dunas</text>
-              <text x="410" y="350">Prainha</text>
-              <text x="305" y="488" font-weight="700" font-size="18">Aquiraz · Centro</text>
-              <text x="565" y="518" text-anchor="middle">Patacas</text>
-              <text x="690" y="618" text-anchor="middle">Iguape</text>
-              <text x="900" y="600">Presídio</text>
-              <text x="765" y="702" text-anchor="middle">Jacaúna</text>
-              <text x="650" y="782" text-anchor="middle">Lagoa da Encantada</text>
-              <text x="100" y="634" text-anchor="middle">Tapuio</text>
-              <text x="224" y="806" text-anchor="middle">Camará</text>
-              <text x="420" y="917" text-anchor="middle">Justiniano de Serpa</text>
-              <text x="610" y="947" text-anchor="middle">Tapera</text>
+            <!-- pontos de referência -->
+            <g font-size="14" fill="var(--map-label)">
+              <circle cx="117" cy="173" r="7" fill="var(--map-poi)"/><text x="131" y="178">IFMA</text>
+              <circle cx="781" cy="50" r="7" fill="var(--map-poi)"/><text x="795" y="55">Hospital Macrorregional</text>
+              <circle cx="993" cy="356" r="7" fill="var(--map-poi)"/><text x="1007" y="361">UFMA</text>
+              <circle cx="228" cy="720" r="7" fill="var(--map-poi)"/><text x="242" y="725">Orla de Imperatriz</text>
+              <circle cx="645" cy="872" r="7" fill="var(--map-poi)"/><text x="659" y="877">Freitas Park</text>
+              <circle cx="830" cy="929" r="7" fill="var(--map-poi)"/><text x="844" y="934">Monte Carmelo</text>
+              <circle cx="341" cy="1077" r="7" fill="var(--map-poi)"/><text x="355" y="1082">Praia do Cacau</text>
             </g>
 
             <g id="bubbles"></g>
+            <line id="leader" x1="0" y1="0" x2="0" y2="0" stroke="var(--fg-strong)" stroke-width="1.5" visibility="hidden"/>
+            </g>
           </svg>
 
-          <div class="tag">Dados fictícios · demonstração</div>
-          <div class="scale" aria-hidden="true"><div class="bar"></div><div class="ticks"><span>0</span><span>2,5</span><span>5 km</span></div></div>
+          <div class="tag">Dados fictícios · posições aproximadas</div>
+          <div class="scale" aria-hidden="true"><div class="bar"></div><div class="ticks"><span>0</span><span>0,5</span><span>1 km</span></div></div>
           <div class="size-legend" aria-hidden="true">
             <div class="ttl">Pessoas atendidas</div>
             <div class="circles" id="sizeLegend"></div>
@@ -742,28 +772,31 @@ const SITUACOES = {
 };
 
 const INSTITUICOES = [
-  { id: "INST-0231", nome_instituicao: "CRAS Prainha", sigla: ["CRAS", "Prainha"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "08.214.330/0004-12", endereco_completo: "Rua Vereador Raimundo Bezerra, 45", bairro: "Prainha", nome_responsavel: "Francisca Holanda", publico_atendido: "Famílias em situação de vulnerabilidade social", numero_pessoas_atendidas: 260, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-30", evento: "formulário validado", x: 460, y: 420 },
-  { id: "INST-0230", nome_instituicao: "CRAS Sede", sigla: ["CRAS Sede"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "08.214.330/0001-70", endereco_completo: "Av. Santos Dumont, 120", bairro: "Centro", nome_responsavel: "Maria de Fátima Souza", publico_atendido: "Famílias referenciadas no CadÚnico", numero_pessoas_atendidas: 420, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-29", evento: "documentos conferidos", x: 330, y: 545 },
-  { id: "INST-0228", nome_instituicao: "Escola Municipal Camará", sigla: ["E.M.", "Camará"], tipo_instituicao: "escola", cnpj_instituicao: "12.345.678/0001-90", endereco_completo: "Rua Principal do Camará, s/n", bairro: "Camará", nome_responsavel: "Antônio Barros", publico_atendido: "Crianças de 6 a 14 anos", numero_pessoas_atendidas: 300, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Certidão de regularidade vencida", servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-28", x: 224, y: 742 },
-  { id: "INST-0226", nome_instituicao: "AERA · Esportes Radicais", sigla: ["AERA"], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação esportiva comunitária", cnpj_instituicao: "21.908.442/0001-05", endereco_completo: "Rua da Praia, 300", bairro: "Prainha", nome_responsavel: "Rafael Monteiro", publico_atendido: "Jovens de 12 a 18 anos", numero_pessoas_atendidas: 120, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-26", evento: "cadastro aprovado", x: 362, y: 372 },
-  { id: "INST-0225", nome_instituicao: "Creche Raio de Sol", sigla: ["Creche"], tipo_instituicao: "creche", cnpj_instituicao: "30.112.587/0001-44", endereco_completo: "Travessa das Jangadas, 12", bairro: "Jacaúna", nome_responsavel: "Jéssica Farias", publico_atendido: "Crianças de 0 a 5 anos", numero_pessoas_atendidas: 110, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Certidão de regularidade vencida", servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-25", x: 768, y: 650 },
-  { id: "INST-0219", nome_instituicao: "Coletivo Cultural Patacas", sigla: [], tipo_instituicao: "outro", tipo_instituicao_outro: "Coletivo cultural", cnpj_instituicao: "40.556.019/0001-33", endereco_completo: "Rua do Farol, 8", bairro: "Patacas", nome_responsavel: "Raimundo Lopes", publico_atendido: "Jovens e adultos da comunidade", numero_pessoas_atendidas: 80, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, em_revisao: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-24", x: 565, y: 465 },
-  { id: "INST-0217", nome_instituicao: "Escola Municipal Justiniano de Serpa", sigla: ["E.M.", "J. Serpa"], tipo_instituicao: "escola", cnpj_instituicao: "12.345.678/0007-85", endereco_completo: "Rua São Francisco, 210", bairro: "Justiniano de Serpa", nome_responsavel: "Tereza Cristina Melo", publico_atendido: "Crianças e adolescentes do ensino fundamental", numero_pessoas_atendidas: 160, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Certidão de regularidade vencida", servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-22", x: 420, y: 862 },
-  { id: "INST-0214", nome_instituicao: "APREMACE", sigla: ["APRE", "MACE"], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação de pais e amigos", cnpj_instituicao: "05.778.901/0001-61", endereco_completo: "Estrada do Presídio, km 2", bairro: "Presídio", nome_responsavel: "Carlos Henrique Dias", publico_atendido: "Pessoas com deficiência e suas famílias", numero_pessoas_atendidas: 150, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-20", evento: "registro no CMDCA renovado", x: 862, y: 645 },
-  { id: "INST-0212", nome_instituicao: "Abrigo Lar Acolhedor", sigla: [], tipo_instituicao: "abrigo", cnpj_instituicao: "17.230.664/0001-02", endereco_completo: "Rua das Carnaúbas, 77", bairro: "Tapuio", nome_responsavel: "Rosângela Pinto", publico_atendido: "Crianças em medida de acolhimento", numero_pessoas_atendidas: 35, possui_estrutura_adequada: "nao", descricao_estrutura: "Necessita reforma no telhado e ampliação dos dormitórios", confirmo_anexo_documentos: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-09-18", x: 100, y: 590 },
-  { id: "INST-0209", nome_instituicao: "CRAS Indígena Jenipapo-Kanindé", sigla: ["CRAS", "Indígena"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "08.214.330/0006-84", endereco_completo: "Aldeia Lagoa Encantada, s/n", bairro: "Lagoa da Encantada", nome_responsavel: "Cacique Irê Kanindé", publico_atendido: "Famílias indígenas do território", numero_pessoas_atendidas: 210, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-15", evento: "documentos conferidos", x: 650, y: 722 },
-  { id: "INST-0206", nome_instituicao: "Escola Municipal Nova Esperança", sigla: ["E.M.", "Centro"], tipo_instituicao: "escola", cnpj_instituicao: "12.345.678/0003-51", endereco_completo: "Rua das Flores, 120", bairro: "Centro", nome_responsavel: "Paulo Sérgio Nunes", publico_atendido: "Crianças de 4 a 10 anos", numero_pessoas_atendidas: 180, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-12", evento: "cadastro aprovado", x: 428, y: 572 },
-  { id: "INST-0204", nome_instituicao: "Creche Pequeno Príncipe", sigla: ["Creche"], tipo_instituicao: "creche", cnpj_instituicao: "33.401.218/0001-27", endereco_completo: "Rua Coronel Alves, 54", bairro: "Centro", nome_responsavel: "Helena Moura", publico_atendido: "Crianças de 0 a 3 anos", numero_pessoas_atendidas: 95, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, em_revisao: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-09-10", x: 258, y: 462 },
-  { id: "INST-0201", nome_instituicao: "Escola Municipal do Iguape", sigla: ["E.M.", "Iguape"], tipo_instituicao: "escola", cnpj_instituicao: "12.345.678/0005-13", endereco_completo: "Rua do Iguape, 400", bairro: "Iguape", nome_responsavel: "Francisco Nogueira", publico_atendido: "Crianças e adolescentes de 6 a 15 anos", numero_pessoas_atendidas: 190, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-06", evento: "cadastro aprovado", x: 690, y: 562 },
-  { id: "INST-0198", nome_instituicao: "Casa de Passagem Tapera", sigla: [], tipo_instituicao: "abrigo", cnpj_instituicao: "17.230.664/0002-93", endereco_completo: "Sítio Tapera, s/n", bairro: "Tapera", nome_responsavel: "Marta Rodrigues", publico_atendido: "Adolescentes em acolhimento provisório", numero_pessoas_atendidas: 40, possui_estrutura_adequada: "nao", descricao_estrutura: "Prédio cedido sem acessibilidade", confirmo_anexo_documentos: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-02", x: 610, y: 902 },
-  { id: "INST-0187", nome_instituicao: "Associação Comunitária Viver Bem", sigla: [], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação de moradores", cnpj_instituicao: "26.884.120/0001-09", endereco_completo: "Rua do Mercado, 15", bairro: "Centro", nome_responsavel: "José Wilson Feitosa", publico_atendido: "Idosos da comunidade", numero_pessoas_atendidas: 60, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-08-14", ativo: false, observacoes: "Instituição encerrou as atividades em agosto de 2026" },
+  { id: "INST-0412", nome_instituicao: "Casa da Criança", sigla: [], tipo_instituicao: "abrigo", cnpj_instituicao: "06.512.873/0001-40", endereco_completo: "Rua Godofredo Viana, 310", bairro: "Centro", nome_responsavel: "Maria de Fátima Souza", publico_atendido: "Crianças de 0 a 12 anos em medida de acolhimento institucional", numero_pessoas_atendidas: 27, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-10-01", evento: "formulário 2 validado", x: 260, y: 647 },
+  { id: "INST-0410", nome_instituicao: "CRAS Bacuri", sigla: ["CRAS Bacuri"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "06.158.455/0004-21", endereco_completo: "Rua Pernambuco, 1200", bairro: "Bacuri", nome_responsavel: "Francisca Holanda", publico_atendido: "Famílias referenciadas no CadÚnico", numero_pessoas_atendidas: 450, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-30", evento: "documentos conferidos", x: 513, y: 782 },
+  { id: "INST-0407", nome_instituicao: "Escola Municipal Anhanguera", sigla: ["E.M.", "Anhanguera"], tipo_instituicao: "escola", cnpj_instituicao: "06.158.455/0011-50", endereco_completo: "Rua Bahia, 85", bairro: "Parque Anhanguera", nome_responsavel: "Antônio Barros", publico_atendido: "Crianças de 6 a 14 anos", numero_pessoas_atendidas: 240, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Certidão de regularidade vencida", servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-29", x: 619, y: 982 },
+  { id: "INST-0405", nome_instituicao: "CRAS Santa Rita", sigla: ["CRAS", "Santa Rita"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "06.158.455/0002-60", endereco_completo: "Rua Santa Rita, 540", bairro: "Santa Rita", nome_responsavel: "Helena Moura", publico_atendido: "Famílias em situação de vulnerabilidade social", numero_pessoas_atendidas: 300, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-27", evento: "cadastro aprovado", x: 340, y: 160 },
+  { id: "INST-0402", nome_instituicao: "APAE Imperatriz", sigla: ["APAE"], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação de pais e amigos dos excepcionais", cnpj_instituicao: "07.023.611/0001-08", endereco_completo: "Av. Bernardo Sayão, 2100", bairro: "Nova Imperatriz", nome_responsavel: "Carlos Henrique Dias", publico_atendido: "Pessoas com deficiência intelectual e múltipla", numero_pessoas_atendidas: 220, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-26", evento: "certidões renovadas", x: 354, y: 379 },
+  { id: "INST-0398", nome_instituicao: "Centro Cultural Tatajuba", sigla: [], tipo_instituicao: "outro", tipo_instituicao_outro: "Centro cultural comunitário", cnpj_instituicao: "31.447.209/0001-12", endereco_completo: "Rua Tatajuba, 77", bairro: "Jardim São Luís", nome_responsavel: "Raimundo Lopes", publico_atendido: "Jovens de 12 a 24 anos", numero_pessoas_atendidas: 90, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, em_revisao: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-09-25", x: 395, y: 607 },
+  { id: "INST-0395", nome_instituicao: "Creche Monte Carmelo", sigla: ["Creche"], tipo_instituicao: "creche", cnpj_instituicao: "28.630.114/0001-77", endereco_completo: "Rua Monte Carmelo, 18", bairro: "Monte Carmelo", nome_responsavel: "Jéssica Farias", publico_atendido: "Crianças de 0 a 5 anos", numero_pessoas_atendidas: 110, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Certidão de regularidade vencida", servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-24", x: 948, y: 759 },
+  { id: "INST-0391", nome_instituicao: "CRAS Cafeteira", sigla: ["CRAS", "Cafeteira"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "06.158.455/0003-40", endereco_completo: "Rua Rio Grande do Norte, 900", bairro: "Vila Cafeteira", nome_responsavel: "Paulo Sérgio Nunes", publico_atendido: "Famílias referenciadas no CadÚnico", numero_pessoas_atendidas: 260, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-22", evento: "cadastro aprovado", x: 696, y: 247 },
+  { id: "INST-0388", nome_instituicao: "Abrigo Esperança", sigla: [], tipo_instituicao: "abrigo", cnpj_instituicao: "19.882.430/0001-95", endereco_completo: "Rua Projetada 4, 210", bairro: "Vila Fiquene", nome_responsavel: "Rosângela Pinto", publico_atendido: "Adolescentes em acolhimento institucional", numero_pessoas_atendidas: 40, possui_estrutura_adequada: "nao", descricao_estrutura: "Casa alugada sem acessibilidade e com dormitórios insuficientes", confirmo_anexo_documentos: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-09-20", x: 993, y: 461 },
+  { id: "INST-0384", nome_instituicao: "CREAS Imperatriz", sigla: ["CREAS"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "06.158.455/0007-93", endereco_completo: "Rua Coronel Manoel Bandeira, 450", bairro: "Centro", nome_responsavel: "Tereza Cristina Melo", publico_atendido: "Famílias e indivíduos com direitos violados", numero_pessoas_atendidas: 180, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-18", evento: "documentos conferidos", x: 329, y: 557 },
+  { id: "INST-0380", nome_instituicao: "Escola Municipal Parque Alvorada II", sigla: ["E.M.", "Alvorada II"], tipo_instituicao: "escola", cnpj_instituicao: "06.158.455/0014-09", endereco_completo: "Rua 12, 340", bairro: "Parque Alvorada II", nome_responsavel: "Francisco Nogueira", publico_atendido: "Crianças e adolescentes do ensino fundamental", numero_pessoas_atendidas: 160, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, pendencia: "Estatuto social desatualizado", servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-09-15", x: 848, y: 151 },
+  { id: "INST-0377", nome_instituicao: "CER Imperatriz", sigla: ["CER"], tipo_instituicao: "outro", tipo_instituicao_outro: "Centro especializado em reabilitação", cnpj_instituicao: "24.105.338/0001-61", endereco_completo: "Av. Jacob, 1500", bairro: "Bom Sucesso", nome_responsavel: "Marta Rodrigues", publico_atendido: "Pessoas com deficiência física, auditiva e visual", numero_pessoas_atendidas: 140, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-12", evento: "cadastro aprovado", x: 557, y: 367 },
+  { id: "INST-0373", nome_instituicao: "CRAS Bom Jesus", sigla: ["CRAS", "Bom Jesus"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "06.158.455/0005-02", endereco_completo: "Rua Bom Jesus, 60", bairro: "Bom Jesus", nome_responsavel: "José Wilson Feitosa", publico_atendido: "Famílias em situação de vulnerabilidade social", numero_pessoas_atendidas: 280, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-09-10", evento: "documentos conferidos", x: 671, y: 417 },
+  { id: "INST-0369", nome_instituicao: "Associação Comunitária Beira Rio", sigla: [], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação de moradores", cnpj_instituicao: "12.774.590/0001-36", endereco_completo: "Rua da Beira Rio, 25", bairro: "Beira Rio", nome_responsavel: "Cícero Araújo", publico_atendido: "Idosos e famílias ribeirinhas", numero_pessoas_atendidas: 60, possui_estrutura_adequada: "nao", descricao_estrutura: "Salão cedido em área sujeita a alagamento", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-06", x: 386, y: 910 },
+  { id: "INST-0366", nome_instituicao: "CRAS Santa Lúcia", sigla: ["CRAS", "Santa Lúcia"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "06.158.455/0006-83", endereco_completo: "Rua Santa Lúcia, 700", bairro: "Santa Lúcia", nome_responsavel: "Sandra Melo", publico_atendido: "Famílias referenciadas no CadÚnico", numero_pessoas_atendidas: 230, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Luciana Batista", atualizado_em: "2026-09-03", evento: "cadastro aprovado", x: 923, y: 592 },
+  { id: "INST-0362", nome_instituicao: "Creche Pequenos Passos", sigla: [], tipo_instituicao: "creche", cnpj_instituicao: "33.401.218/0001-27", endereco_completo: "Rua Ceará, 1020", bairro: "Nova Imperatriz", nome_responsavel: "Lúcia Ferreira", publico_atendido: "Crianças de 1 a 4 anos", numero_pessoas_atendidas: 90, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-08-30", evento: "cadastro aprovado", x: 212, y: 504 },
+  { id: "INST-0358", nome_instituicao: "Escola Municipal Vila Macedo", sigla: ["E.M.", "V. Macedo"], tipo_instituicao: "escola", cnpj_instituicao: "06.158.455/0016-62", endereco_completo: "Rua São Raimundo, 400", bairro: "Vila Macedo", nome_responsavel: "Rafaela Costa", publico_atendido: "Crianças de 4 a 10 anos", numero_pessoas_atendidas: 150, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-08-27", evento: "cadastro aprovado", x: 520, y: 170 },
+  { id: "INST-0350", nome_instituicao: "Associação Cultural Raízes", sigla: [], tipo_instituicao: "outro", tipo_instituicao_outro: "Associação cultural", cnpj_instituicao: "26.884.120/0001-09", endereco_completo: "Rua Simplício Moreira, 15", bairro: "Centro", nome_responsavel: "Jorge Batista", publico_atendido: "Jovens e adultos da comunidade", numero_pessoas_atendidas: 60, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Rafael Monteiro", atualizado_em: "2026-08-14", ativo: false, observacoes: "Instituição encerrou as atividades em agosto de 2026" },
 ];
 
 // Completa os campos do formulário que não variam no exemplo
 const DATAS_CADASTRO = ["2026-09-12", "2026-08-03", "2026-09-01", "2026-07-21", "2026-08-30", "2026-09-17", "2026-07-08", "2026-06-25", "2026-08-11", "2026-06-02", "2026-05-19", "2026-08-22", "2026-05-06", "2026-07-30", "2026-03-10"];
 INSTITUICOES.forEach((r, i) => {
   r.ativo = r.ativo !== false;
-  r.telefone_contato = r.telefone_contato || `(85) 9${String(8100 + i * 137).slice(0, 4)}-${String(2300 + i * 419).slice(0, 4)}`;
+  r.telefone_contato = r.telefone_contato || `(99) 9${String(8100 + i * 137).slice(0, 4)}-${String(2300 + i * 419).slice(0, 4)}`;
   r.descricao_estrutura = r.descricao_estrutura || (r.possui_estrutura_adequada === "sim" ? "Prédio próprio em bom estado, com salas de atendimento, cozinha e banheiros acessíveis" : "");
   r.observacoes = r.observacoes || "";
   r.data_cadastro = r.data_cadastro || DATAS_CADASTRO[i % DATAS_CADASTRO.length];
@@ -828,8 +861,8 @@ noMapa().sort((a, b) => b.numero_pessoas_atendidas - a.numero_pessoas_atendidas)
     <circle cx="${r.x}" cy="${r.y}" r="${rr + 14}" fill="${cor}" opacity=".22"/>
     <circle class="core" cx="${r.x}" cy="${r.y}" r="${rr}" fill="${cor}"/>
     ${linhas.map((t, i) => `<text x="${r.x}" y="${r.y + (i - (linhas.length - 1) / 2) * 17 + 5}" text-anchor="middle" fill="#fff" font-size="${linhas.length > 1 ? 14 : 15}" font-weight="700">${esc(t)}</text>`).join("")}
-    ${r.id === "INST-0230" ? `<text x="${r.x}" y="${r.y + 22}" text-anchor="middle" fill="#fff" font-size="13">${r.numero_pessoas_atendidas} atend.</text>` : ""}`;
-  if (r.id === "INST-0230") g.querySelector("text").setAttribute("y", r.y - 2);
+    ${r.numero_pessoas_atendidas >= 400 ? `<text x="${r.x}" y="${r.y + 22}" text-anchor="middle" fill="#fff" font-size="13">${r.numero_pessoas_atendidas} atend.</text>` : ""}`;
+  if (r.numero_pessoas_atendidas >= 400) g.querySelector("text").setAttribute("y", r.y - 2);
   g.addEventListener("click", () => selecionar(r.id));
   g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selecionar(r.id); } });
   gB.appendChild(g);
@@ -844,7 +877,7 @@ function selecionar(id) {
   document.querySelectorAll(".bubble").forEach(b => b.classList.toggle("sel", b.dataset.id === id));
   const r = INSTITUICOES.find(x => x.id === id);
   const pop = $("popup");
-  if (!r) { pop.hidden = true; return; }
+  if (!r) { pop.hidden = true; $("leader").setAttribute("visibility", "hidden"); return; }
   const s = situacao(r);
   const chk = (ok, txt) => `<span class="${ok ? "ok" : "x"}">${txt} ${ok ? "✓" : "✕"}</span>`;
   const tipo = r.tipo_instituicao === "outro" ? r.tipo_instituicao_outro : TIPOS[r.tipo_instituicao];
@@ -874,12 +907,22 @@ function posicionarPopup() {
   const k = wrap.width / 1120;
   const px = r.x * k, py = r.y * k, rr = (raio(r.numero_pessoas_atendidas) + 14) * k;
   const pw = pop.offsetWidth, ph = pop.offsetHeight;
-  let left = px + rr * .6, top = py - ph - rr * .6;
-  if (top < 8) top = py + rr + 8;
-  if (top + ph > wrap.height - 8) top = Math.max(8, py - ph - rr);
+  // abaixo e à esquerda (como na referência); troca de lado só quando não cabe
+  const gap = 24 * k + 12;
+  let top = py + rr + gap;
+  if (top + ph > wrap.height - 8) top = py - rr - gap - ph;
+  if (top < 8) top = Math.min(Math.max(8, py - ph / 2), wrap.height - ph - 8);
+  let left = px - pw * .75;
+  if (left < 8) left = px + rr * .4;
   left = Math.min(Math.max(8, left), wrap.width - pw - 8);
   pop.style.left = left + "px";
   pop.style.top = top + "px";
+  const ax = Math.min(Math.max(px, left), left + pw), ay = Math.min(Math.max(py, top), top + ph);
+  const dx = ax - px, dy = ay - py, d = Math.hypot(dx, dy) || 1, r0 = raio(r.numero_pessoas_atendidas) * k;
+  const ln = $("leader");
+  ln.setAttribute("x1", (px + dx / d * r0) / k); ln.setAttribute("y1", (py + dy / d * r0) / k);
+  ln.setAttribute("x2", ax / k); ln.setAttribute("y2", ay / k);
+  ln.setAttribute("visibility", d > r0 + 4 ? "visible" : "hidden");
 }
 
 function filtrados() {
@@ -1160,7 +1203,7 @@ $("btnNova").addEventListener("click", () => {
       </section>
       <section class="sec"><h3>Contato e responsável <span>· página 2</span></h3>
         ${campo("n_endereco", "Endereço completo *", "text", "Ex.: Rua das Flores, 120")}
-        ${campo("n_bairro", "Bairro *", "text", "Ex.: Prainha", 'list="listaBairros"')}
+        ${campo("n_bairro", "Bairro *", "text", "Ex.: Bacuri", 'list="listaBairros"')}
         <datalist id="listaBairros">${Object.keys(POS_BAIRRO).sort().map(b => `<option value="${b}">`).join("")}</datalist>
         ${campo("n_tel", "Telefone para contato *", "tel", "Ex.: (85) 99999-1234", 'inputmode="numeric" maxlength="15"')}
         ${campo("n_resp", "Nome do responsável pela instituição *", "text", "Ex.: Maria de Fátima Souza")}
@@ -1237,7 +1280,7 @@ function salvarNova() {
   const maior = Math.max(...INSTITUICOES.map(r => +r.id.split("-")[1]));
   const bairro = Object.keys(POS_BAIRRO).find(b => b.toLowerCase() === v("n_bairro").toLowerCase()) || v("n_bairro");
   const pos = POS_BAIRRO[bairro];
-  const hoje = "2026-10-01";
+  const hoje = "2026-10-02";
   const nova = {
     id: `INST-${String(maior + 1).padStart(4, "0")}`, nome_instituicao: v("n_nome"), sigla: [],
     tipo_instituicao: v("n_tipo"), tipo_instituicao_outro: v("n_tipo_outro"), cnpj_instituicao: v("n_cnpj"),
@@ -1273,7 +1316,7 @@ addEventListener("hashchange", () => mostrarView(location.hash.slice(1)));
 
 render();
 mostrarView(location.hash.slice(1) || "mapa");
-selecionar("INST-0226");
+selecionar("INST-0412");
 </script>
 
 </html>
