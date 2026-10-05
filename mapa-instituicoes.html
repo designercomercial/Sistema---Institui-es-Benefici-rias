@@ -387,7 +387,10 @@
   .btn-outline:hover { border-color: var(--accent-border); }
   .btn-outline svg { width: 18px; height: 18px; }
   .count-badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--accent-solid); color: #fff; font-size: 12.5px; font-weight: 700; display: inline-grid; place-items: center; }
-  .ed-bar .order { margin-left: auto; }
+  .ed-actions { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+  .ed-actions .btn-primary { margin-left: 0; }
+  .content.single { grid-template-columns: minmax(0, 1fr); }
+  .drawer .drop { min-height: 260px; }
   .ed-bar .order select { background: var(--bg-card); min-width: 280px; }
   .filter-pop { position: relative; }
   .filter-pop .menu { left: 0; right: auto; top: 50px; width: 260px; }
@@ -887,9 +890,19 @@
             <option value="empresa">Ordenar: empresa (A–Z)</option>
           </select>
         </div>
+        <div class="ed-actions">
+          <button class="btn-outline" id="eImportar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+            Importar
+          </button>
+          <button class="btn-primary" id="eNovo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+            Novo edital
+          </button>
+        </div>
       </div>
 
-      <section class="content">
+      <section class="content single">
         <article class="card ed-card">
           <div class="ed-head">
             <h2>Editais abertos</h2>
@@ -904,25 +917,6 @@
           <p class="ed-note">Editais e empresas fictícios, criados para demonstração.</p>
         </article>
 
-        <aside class="card imp-card" id="impCard">
-          <h2>Importar edital</h2>
-          <p>O sistema lê o edital e preenche os campos para você revisar antes de salvar.</p>
-          <div id="impInicio">
-            <label class="drop" id="drop">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
-              <b>Arraste o PDF do edital</b>
-              <small>ou clique para escolher</small>
-              <input type="file" id="impArquivo" accept="application/pdf,.pdf">
-            </label>
-            <div class="ou">ou</div>
-            <form class="link-row" id="impLinkForm" novalidate>
-              <input type="url" id="impLink" placeholder="Cole o link do edital" aria-label="Link do edital">
-              <button class="btn-dark" type="submit">Ler</button>
-            </form>
-            <div class="imp-err" id="impErr" hidden></div>
-          </div>
-          <div id="impRevisao" hidden></div>
-        </aside>
       </section>
     </div>
 
@@ -1407,7 +1401,7 @@ document.querySelectorAll("[data-soon]").forEach(el => el.addEventListener("clic
 /* ---------- painel lateral ---------- */
 let ultimoFoco = null;
 function abrirPainel(titulo, sub, corpo, rodape) {
-  ultimoFoco = document.activeElement;
+  if ($("drawer").hidden) ultimoFoco = document.activeElement;
   $("drawerTitle").textContent = titulo;
   $("drawerSub").innerHTML = sub;
   $("drawerBody").innerHTML = corpo;
@@ -1678,21 +1672,63 @@ function abrirVinculo(id) {
   });
 }
 
-// importar edital (PDF ou link)
-function mostrarRevisao(origem, nomeSugerido) {
-  $("impInicio").hidden = true; $("impErr").hidden = true;
-  const r = $("impRevisao"); r.hidden = false;
-  r.innerHTML = `<form class="imp-form" id="impForm" novalidate>
-    <div class="arquivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>${esc(origem)}</div>
-    <div class="info-box">Na versão final, o sistema lê o edital e preenche estes campos. Nesta demonstração, só o nome é sugerido; complete e confira antes de salvar.</div>
+// importar edital (PDF ou link) e novo edital, abertos pelos botões da barra
+const ICO_PDF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>';
+
+function abrirImportar() {
+  abrirPainel("Importar edital", "O sistema lê o edital e preenche os campos para você revisar antes de salvar.",
+    `<div style="padding-top:20px">
+      <label class="drop" id="drop">
+        ${ICO_PDF}
+        <b>Arraste o PDF do edital</b>
+        <small>ou clique para escolher</small>
+        <input type="file" id="impArquivo" accept="application/pdf,.pdf">
+      </label>
+      <div class="ou">ou</div>
+      <form class="link-row" id="impLinkForm" novalidate>
+        <input type="url" id="impLink" placeholder="Cole o link do edital" aria-label="Link do edital">
+        <button class="btn-dark" type="submit">Ler</button>
+      </form>
+      <div class="imp-err" id="impErr" hidden></div>
+    </div>`,
+    `<button class="btn-secondary" id="impFechar">Cancelar</button>`);
+  $("impFechar").addEventListener("click", fecharPainel);
+  const erro = t => { $("impErr").textContent = t; $("impErr").hidden = false; };
+  const receber = f => {
+    if (!f) return;
+    if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") return erro("Envie o edital em PDF.");
+    formEdital(f.name, f.name.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ").trim());
+  };
+  $("impArquivo").addEventListener("change", e => receber(e.target.files[0]));
+  ["dragenter", "dragover"].forEach(t => $("drop").addEventListener(t, e => { e.preventDefault(); $("drop").classList.add("over"); }));
+  ["dragleave", "drop"].forEach(t => $("drop").addEventListener(t, e => { e.preventDefault(); $("drop").classList.remove("over"); }));
+  $("drop").addEventListener("drop", e => receber(e.dataTransfer.files[0]));
+  $("impLinkForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const url = $("impLink").value.trim();
+    let ok = false; try { ok = /^https?:$/.test(new URL(url).protocol); } catch (er) {}
+    if (!ok) return erro("Cole um link completo, começando com http:// ou https://.");
+    const ultimo = decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() || "");
+    formEdital(url, ultimo.replace(/\.(pdf|html?)$/i, "").replace(/[-_]+/g, " ").trim());
+  });
+}
+
+// origem = nome do arquivo ou link importado; null quando o edital é cadastrado à mão
+function formEdital(origem, nomeSugerido) {
+  $("drawerTitle").textContent = origem ? "Revisar edital importado" : "Novo edital";
+  $("drawerSub").textContent = origem ? "Confira os campos antes de salvar." : "Preencha os dados do edital. Campos com * são obrigatórios.";
+  $("drawerBody").innerHTML = `<form class="imp-form" id="impForm" novalidate style="padding-top:20px">
+    ${origem ? `<div class="arquivo">${ICO_PDF}${esc(origem)}</div>
+    <div class="info-box">Na versão final, o sistema lê o edital e preenche estes campos. Nesta demonstração, só o nome é sugerido; complete e confira antes de salvar.</div>` : ""}
     <label class="field" data-f="i_empresa"><span>Empresa *</span><input type="text" id="i_empresa" placeholder="Ex.: Banco Horizonte"><span class="err" hidden></span></label>
     <label class="field" data-f="i_nome"><span>Nome do edital *</span><input type="text" id="i_nome" value="${esc(nomeSugerido)}" placeholder="Ex.: Infância Primeiro"><span class="err" hidden></span></label>
     <label class="field" data-f="i_area"><span>Área *</span><select id="i_area"><option value="">Selecione</option>${AREAS.map(a => `<option>${a}</option>`).join("")}</select><span class="err" hidden></span></label>
     <label class="field" data-f="i_valor"><span>Valor disponível (R$) *</span><input type="number" id="i_valor" min="0" step="1000" inputmode="numeric" placeholder="Ex.: 500000"><span class="err" hidden></span></label>
     <label class="field" data-f="i_prazo"><span>Inscrição até *</span><input type="date" id="i_prazo" min="${HOJE}"><span class="err" hidden></span></label>
-    <div class="actions"><button type="button" class="btn-secondary" id="impCancelar">Cancelar</button><button type="submit" class="btn-primary">Salvar edital</button></div>
   </form>`;
-  $("impCancelar").addEventListener("click", voltarImport);
+  $("drawerFoot").innerHTML = `<button class="btn-secondary" id="impVoltar">${origem ? "Voltar" : "Cancelar"}</button><button class="btn-primary" id="impSalvar">Salvar edital</button>`;
+  $("impVoltar").addEventListener("click", origem ? abrirImportar : fecharPainel);
+  $("impSalvar").addEventListener("click", () => $("impForm").requestSubmit());
   $("impForm").addEventListener("submit", ev => {
     ev.preventDefault();
     const v = id => ($(id).value || "").trim();
@@ -1706,32 +1742,13 @@ function mostrarRevisao(origem, nomeSugerido) {
     if (Object.keys(erros).length) return;
     EDITAIS.forEach(e => e.novo = false);
     EDITAIS.push({ id: `ED-${String(EDITAIS.length + 1).padStart(2, "0")}`, empresa: v("i_empresa"), setor: "outro", nome: v("i_nome"), areas: [v("i_area")], valor: +v("i_valor"), prazo: v("i_prazo"), novo: true, vinculos: [] });
-    voltarImport(); renderEditais();
+    fecharPainel(); renderEditais();
     aviso(`Edital ${v("i_nome")} salvo e marcado como novo.`);
   });
   $("i_empresa").focus();
 }
-function voltarImport() {
-  $("impRevisao").hidden = true; $("impRevisao").innerHTML = ""; $("impInicio").hidden = false;
-  $("impArquivo").value = ""; $("impLink").value = "";
-}
-function receberArquivo(f) {
-  if (!f) return;
-  if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") { $("impErr").textContent = "Envie o edital em PDF."; $("impErr").hidden = false; return; }
-  mostrarRevisao(f.name, f.name.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ").trim());
-}
-$("impArquivo").addEventListener("change", e => receberArquivo(e.target.files[0]));
-["dragenter", "dragover"].forEach(t => $("drop").addEventListener(t, e => { e.preventDefault(); $("drop").classList.add("over"); }));
-["dragleave", "drop"].forEach(t => $("drop").addEventListener(t, e => { e.preventDefault(); $("drop").classList.remove("over"); }));
-$("drop").addEventListener("drop", e => receberArquivo(e.dataTransfer.files[0]));
-$("impLinkForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const url = $("impLink").value.trim();
-  let ok = false; try { ok = /^https?:$/.test(new URL(url).protocol); } catch (er) {}
-  if (!ok) { $("impErr").textContent = "Cole um link completo, começando com http:// ou https://."; $("impErr").hidden = false; return; }
-  const ultimo = decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() || "");
-  mostrarRevisao(url, ultimo.replace(/\.(pdf|html?)$/i, "").replace(/[-_]+/g, " ").trim());
-});
+$("eImportar").addEventListener("click", abrirImportar);
+$("eNovo").addEventListener("click", () => { abrirPainel("Novo edital", "", "", ""); formEdital(null, ""); });
 
 /* ---------- navegação entre seções ---------- */
 const VIEWS = {
