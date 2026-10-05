@@ -36,6 +36,12 @@
     --accent-solid: #3a46b0;
     --bg-zebra: #f6f7f9;
     --bg-hover: #eef1fb;
+    --border-strong-2: #b9c2cb;
+    --tile-banco-bg: #e6e8fa; --tile-banco-fg: #3a46b0;
+    --tile-varejo-bg: #fdeadb; --tile-varejo-fg: #c2560c;
+    --tile-industria-bg: #dcefee; --tile-industria-fg: #0f5f5a;
+    --tile-energia-bg: #fbf0cc; --tile-energia-fg: #8a6208;
+    --tile-mineracao-bg: #efe4dc; --tile-mineracao-fg: #7a4a2c;
 
     --st-apta: #1f8a5f;
     --st-pend: #dda425;
@@ -76,7 +82,7 @@
     :root:not([data-theme="light"]) {
       --bg-page: #111a20; --bg-card: #18232b; --bg-control: #1f2c35; --bg-soft: #1f2c35;
       --border-default: #2b3a45; --fg-strong: #eef3f6; --fg-default: #d3dbe1; --fg-muted: #9ca8b2; --fg-subtle: #75828c;
-      --accent: #a9b1ff; --accent-border: #7a85e6; --accent-solid: #4b57c9; --bg-zebra: #1b272f; --bg-hover: #222f42;
+      --accent: #a9b1ff; --accent-border: #7a85e6; --accent-solid: #4b57c9; --bg-zebra: #1b272f; --bg-hover: #222f42; --border-strong-2: #43535f; --tile-banco-bg: #262c5c; --tile-banco-fg: #b4bbff; --tile-varejo-bg: #47301e; --tile-varejo-fg: #ffb98a; --tile-industria-bg: #173c3a; --tile-industria-fg: #7fd6cf; --tile-energia-bg: #463b17; --tile-energia-fg: #f2d06b; --tile-mineracao-bg: #3f2f25; --tile-mineracao-fg: #e0b597;
       --st-apta-bg: #163a2c; --st-pend-bg: #3d3117; --st-nao-bg: #432220; --st-rev-bg: #252b55;
       --st-apta-fg: #6fd3a5; --st-pend-fg: #f0c766; --st-nao-fg: #f19189; --st-rev-fg: #aeb6ff;
       --map-ocean: #1d4359; --map-land: #1c302b; --map-zone: #223a33; --map-beach: #4a4532; --map-water: #3f86ad;
@@ -88,7 +94,7 @@
   :root[data-theme="dark"] {
     --bg-page: #111a20; --bg-card: #18232b; --bg-control: #1f2c35; --bg-soft: #1f2c35;
     --border-default: #2b3a45; --fg-strong: #eef3f6; --fg-default: #d3dbe1; --fg-muted: #9ca8b2; --fg-subtle: #75828c;
-    --accent: #a9b1ff; --accent-border: #7a85e6; --accent-solid: #4b57c9; --bg-zebra: #1b272f; --bg-hover: #222f42;
+    --accent: #a9b1ff; --accent-border: #7a85e6; --accent-solid: #4b57c9; --bg-zebra: #1b272f; --bg-hover: #222f42; --border-strong-2: #43535f; --tile-banco-bg: #262c5c; --tile-banco-fg: #b4bbff; --tile-varejo-bg: #47301e; --tile-varejo-fg: #ffb98a; --tile-industria-bg: #173c3a; --tile-industria-fg: #7fd6cf; --tile-energia-bg: #463b17; --tile-energia-fg: #f2d06b; --tile-mineracao-bg: #3f2f25; --tile-mineracao-fg: #e0b597;
     --st-apta-bg: #163a2c; --st-pend-bg: #3d3117; --st-nao-bg: #432220; --st-rev-bg: #252b55;
     --st-apta-fg: #6fd3a5; --st-pend-fg: #f0c766; --st-nao-fg: #f19189; --st-rev-fg: #aeb6ff;
     --map-ocean: #1d4359; --map-land: #1c302b; --map-zone: #223a33; --map-beach: #4a4532; --map-water: #3f86ad;
@@ -370,6 +376,94 @@
   .menu label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 14.5px; }
   .menu label:hover { background: var(--bg-control); }
 
+  /* ---------- Editais captados ---------- */
+  .ed-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--border-default); }
+  .ed-bar .search { flex: 0 1 446px; }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 16px;
+    background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 8px;
+    font-size: 16px; color: var(--fg-strong); cursor: pointer;
+  }
+  .btn-outline:hover { border-color: var(--accent-border); }
+  .btn-outline svg { width: 18px; height: 18px; }
+  .count-badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--accent-solid); color: #fff; font-size: 12.5px; font-weight: 700; display: inline-grid; place-items: center; }
+  .ed-bar .order { margin-left: auto; }
+  .ed-bar .order select { background: var(--bg-card); min-width: 280px; }
+  .filter-pop { position: relative; }
+  .filter-pop .menu { left: 0; right: auto; top: 50px; width: 260px; }
+  .menu .menu-title { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--fg-muted); padding: 8px 10px 4px; }
+  .menu hr { border: 0; border-top: 1px solid var(--border-default); margin: 6px 0; }
+
+  .ed-card { padding: 24px 28px 20px; min-width: 0; display: flex; flex-direction: column; }
+  .ed-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .ed-head h2 { margin: 0; font-size: 22px; font-weight: 600; color: var(--fg-strong); }
+  .ed-head span { color: var(--fg-muted); font-size: 15.5px; font-variant-numeric: tabular-nums; }
+  .ed-scroll { overflow-x: auto; }
+  .ed-tbl { width: 100%; min-width: 900px; border-collapse: collapse; }
+  .ed-tbl th {
+    text-align: left; padding: 0 14px 14px; font-size: 13.5px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--fg-muted); border-bottom: 1px solid var(--border-default); vertical-align: bottom;
+  }
+  .ed-tbl td { padding: 0 14px; height: 100px; border-bottom: 1px solid var(--border-default); font-size: 17px; color: var(--fg-default); }
+  .ed-tbl tr.novo td { background: var(--bg-zebra); }
+  .emp { display: flex; align-items: center; gap: 16px; }
+  .emp b { font-weight: 600; color: var(--fg-strong); line-height: 1.25; }
+  .tile { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+  .tile svg { width: 22px; height: 22px; }
+  .tile.banco { background: var(--tile-banco-bg); color: var(--tile-banco-fg); }
+  .tile.varejo { background: var(--tile-varejo-bg); color: var(--tile-varejo-fg); }
+  .tile.industria { background: var(--tile-industria-bg); color: var(--tile-industria-fg); }
+  .tile.energia { background: var(--tile-energia-bg); color: var(--tile-energia-fg); }
+  .tile.mineracao { background: var(--tile-mineracao-bg); color: var(--tile-mineracao-fg); }
+  .tag-novo { margin-left: 8px; padding: 3px 8px; border-radius: 6px; background: var(--st-apta); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .5px; white-space: nowrap; }
+  .chip { display: inline-block; padding: 4px 14px; border: 1px solid var(--border-strong-2); border-radius: 999px; font-size: 15.5px; color: var(--fg-default); white-space: nowrap; }
+  .valor { font-weight: 700; color: var(--fg-strong); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .prazo b { display: block; font-weight: 600; color: var(--fg-strong); font-variant-numeric: tabular-nums; }
+  .prazo span { display: inline-flex; align-items: center; gap: 4px; font-size: 15px; color: var(--fg-muted); }
+  .prazo span svg { width: 14px; height: 14px; }
+  .prazo .urgente { color: var(--st-nao-fg); font-weight: 600; }
+  .prazo .atencao { color: var(--st-pend-fg); font-weight: 600; }
+  .btn-vincular {
+    height: 40px; padding: 0 16px; border-radius: 8px; border: 1.5px solid var(--border-strong-2); background: var(--bg-card);
+    font-size: 16px; font-weight: 600; color: var(--fg-strong); cursor: pointer; white-space: nowrap;
+  }
+  .btn-vincular:hover { border-color: var(--accent-border); }
+  .btn-vincular.feito { border-color: var(--st-apta); color: var(--st-apta-fg); background: var(--st-apta-bg); }
+  .ed-note { margin-top: auto; padding-top: 24px; font-size: 14px; color: var(--fg-muted); }
+
+  .imp-card { padding: 24px 28px 28px; }
+  .imp-card h2 { margin: 0 0 8px; font-size: 21px; font-weight: 600; color: var(--fg-strong); }
+  .imp-card > p { margin: 0 0 20px; color: var(--fg-muted); font-size: 15.5px; line-height: 1.45; }
+  .drop {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center;
+    min-height: 230px; padding: 24px; border: 2px dashed var(--border-strong-2); border-radius: 12px;
+    background: var(--bg-soft); cursor: pointer; color: var(--fg-strong);
+  }
+  .drop:hover, .drop.over { border-color: var(--accent-border); background: var(--bg-hover); }
+  .drop svg { width: 44px; height: 44px; margin-bottom: 18px; color: var(--bg-shell); }
+  :root[data-theme="dark"] .drop svg { color: var(--fg-strong); }
+  .drop b { font-size: 18px; }
+  .drop small { font-size: 15px; color: var(--fg-muted); }
+  .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .ou { display: flex; align-items: center; gap: 14px; margin: 22px 0; color: var(--fg-muted); }
+  .ou::before, .ou::after { content: ""; flex: 1; border-top: 1px solid var(--border-default); }
+  .link-row { display: flex; gap: 10px; }
+  .link-row input { flex: 1; min-width: 0; height: 48px; padding: 0 14px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--bg-card); font-size: 15.5px; }
+  .btn-dark { height: 48px; padding: 0 22px; border: 0; border-radius: 8px; background: var(--bg-shell); color: #fff; font-weight: 600; font-size: 16px; cursor: pointer; }
+  .btn-dark:hover { filter: brightness(1.15); }
+  .imp-err { margin-top: 8px; font-size: 13.5px; color: var(--st-nao-fg); }
+  .imp-form .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+  .imp-form .actions .btn-primary { margin-left: 0; height: 40px; font-size: 15px; }
+  .arquivo { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--bg-soft); margin-bottom: 14px; font-size: 14px; color: var(--fg-strong); overflow-wrap: anywhere; }
+  .arquivo svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .vinc-list { display: grid; gap: 8px; }
+  .vinc-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--border-default); border-radius: 10px; cursor: pointer; }
+  .vinc-item:hover { border-color: var(--accent-border); }
+  .vinc-item input { margin-top: 4px; width: 18px; height: 18px; flex-shrink: 0; }
+  .vinc-item b { display: block; color: var(--fg-strong); }
+  .vinc-item span { display: block; font-size: 13.5px; color: var(--fg-muted); margin-top: 2px; }
+
   /* ---------- Painel lateral (detalhe / cadastro) ---------- */
   .scrim { position: fixed; inset: 0; background: rgba(8, 20, 24, .45); z-index: 20; }
   .drawer {
@@ -462,7 +556,7 @@
       </button>
       <ul class="nav-sub">
         <li><a href="#mapa" data-view="mapa">Mapa de instituições aptas</a></li>
-        <li><a href="#painel" data-soon>Painel de captação</a></li>
+        <li><a href="#editais" data-view="editais">Editais captados</a></li>
         <li><a href="#empresas" data-soon>Empresas doadoras</a></li>
       </ul>
       <a class="nav-item" href="#instituicoes" data-view="instituicoes">
@@ -771,6 +865,67 @@
     </section>
     </div>
 
+    <!-- ===== Editais captados ===== -->
+    <div id="viewEditais" hidden>
+      <div class="ed-bar" role="group" aria-label="Busca e filtros de editais">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="eBusca" type="search" placeholder="Buscar edital ou empresa" aria-label="Buscar edital ou empresa">
+        </label>
+        <div class="filter-pop">
+          <button class="btn-outline" id="eFiltrosBtn" aria-expanded="false" aria-haspopup="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>
+            Filtros <span class="count-badge" id="eFiltrosN" hidden>0</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="menu" id="eFiltrosMenu" hidden></div>
+        </div>
+        <div class="sel order">
+          <select id="eOrdem" aria-label="Ordenar editais">
+            <option value="prazo">Ordenar: prazo de inscrição</option>
+            <option value="valor">Ordenar: maior valor</option>
+            <option value="empresa">Ordenar: empresa (A–Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <section class="content">
+        <article class="card ed-card">
+          <div class="ed-head">
+            <h2>Editais abertos</h2>
+            <span id="eResumo"></span>
+          </div>
+          <div class="ed-scroll">
+            <table class="ed-tbl">
+              <thead><tr><th>Empresa</th><th>Edital</th><th>Área</th><th>Valor</th><th>Inscrição até</th><th><span style="position:absolute;left:-9999px">Ações</span></th></tr></thead>
+              <tbody id="eBody"></tbody>
+            </table>
+          </div>
+          <p class="ed-note">Editais e empresas fictícios, criados para demonstração.</p>
+        </article>
+
+        <aside class="card imp-card" id="impCard">
+          <h2>Importar edital</h2>
+          <p>O sistema lê o edital e preenche os campos para você revisar antes de salvar.</p>
+          <div id="impInicio">
+            <label class="drop" id="drop">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+              <b>Arraste o PDF do edital</b>
+              <small>ou clique para escolher</small>
+              <input type="file" id="impArquivo" accept="application/pdf,.pdf">
+            </label>
+            <div class="ou">ou</div>
+            <form class="link-row" id="impLinkForm" novalidate>
+              <input type="url" id="impLink" placeholder="Cole o link do edital" aria-label="Link do edital">
+              <button class="btn-dark" type="submit">Ler</button>
+            </form>
+            <div class="imp-err" id="impErr" hidden></div>
+          </div>
+          <div id="impRevisao" hidden></div>
+        </aside>
+      </section>
+    </div>
+
     <!-- ===== Instituições registradas ===== -->
     <div id="viewInstituicoes" hidden>
       <div class="tb-filters" role="group" aria-label="Filtros da lista">
@@ -859,6 +1014,7 @@ const SITUACOES = {
   revisao: { label: "Em revisão", cor: "--st-rev" },
 };
 
+const HOJE = "2026-10-05"; // data de referência da demonstração
 const INST_IMPERATRIZ = [
   { id: "INST-0412", nome_instituicao: "Casa da Criança", sigla: [], tipo_instituicao: "abrigo", cnpj_instituicao: "06.512.873/0001-40", endereco_completo: "Rua Godofredo Viana, 310", bairro: "Centro", nome_responsavel: "Maria de Fátima Souza", publico_atendido: "Crianças de 0 a 12 anos em medida de acolhimento institucional", numero_pessoas_atendidas: 27, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "João Pedro Almeida", atualizado_em: "2026-10-01", evento: "formulário 2 validado", x: 260, y: 647 },
   { id: "INST-0410", nome_instituicao: "CRAS Bacuri", sigla: ["CRAS Bacuri"], tipo_instituicao: "centro_assistencia", cnpj_instituicao: "06.158.455/0004-21", endereco_completo: "Rua Pernambuco, 1200", bairro: "Bacuri", nome_responsavel: "Francisca Holanda", publico_atendido: "Famílias referenciadas no CadÚnico", numero_pessoas_atendidas: 450, possui_estrutura_adequada: "sim", confirmo_anexo_documentos: true, servidor_responsavel: "Ana Cláudia Lima", atualizado_em: "2026-09-30", evento: "documentos conferidos", x: 513, y: 782 },
@@ -1396,7 +1552,7 @@ function salvarNova() {
   const maior = Math.max(...INSTITUICOES.map(r => +r.id.split("-")[1]));
   const bairro = Object.keys(POS_BAIRRO[municipio]).find(b => b.toLowerCase() === v("n_bairro").toLowerCase()) || v("n_bairro");
   const pos = POS_BAIRRO[municipio][bairro];
-  const hoje = "2026-10-02";
+  const hoje = HOJE;
   const nova = {
     municipio,
     id: `INST-${String(maior + 1).padStart(4, "0")}`, nome_instituicao: v("n_nome"), sigla: [],
@@ -1414,9 +1570,173 @@ function salvarNova() {
   aviso(`${nova.nome_instituicao} cadastrada como ${nova.id}. Fica em revisão até a análise do servidor.`);
 }
 
+/* =========================================================================
+   Editais captados (empresas e editais fictícios)
+   ========================================================================= */
+const AREAS = ["Esporte", "Infância", "Pessoa idosa", "Saúde", "PcD", "Cultura", "Educação"];
+const SETORES = {
+  outro: '<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-5h6v5"/>',
+  banco: '<path d="M3 21h18"/><path d="M4 10h16"/><path d="M12 3 3 8h18z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  varejo: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.4a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/>',
+  industria: '<path d="M2 20h20"/><path d="M4 20V10l5 3V10l5 3V6l6 4v10"/>',
+  energia: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  mineracao: '<path d="M14 6c3 0 6 2 7 5"/><path d="M14 6c-3-2-7-2-10 0"/><path d="m14 6-9 15"/>',
+};
+const EDITAIS = [
+  { id: "ED-01", empresa: "Banco Horizonte", setor: "banco", nome: "Esporte e Cidadania", areas: ["Esporte"], valor: 1200000, prazo: "2026-10-15" },
+  { id: "ED-02", empresa: "Banco Sertão Vivo", setor: "banco", nome: "Edital Social FIA 2026", areas: ["Infância"], valor: 2400000, prazo: "2026-10-24" },
+  { id: "ED-03", empresa: "Grupo Varejo Norte", setor: "varejo", nome: "Doação IR · Pessoa idosa", areas: ["Pessoa idosa"], valor: 400000, prazo: "2026-10-31" },
+  { id: "ED-04", empresa: "Celulose Tocantins", setor: "industria", nome: "Comunidade Protegida", areas: ["Infância"], valor: 600000, prazo: "2026-11-14" },
+  { id: "ED-05", empresa: "Energia do Meio-Norte", setor: "energia", nome: "Reabilitação para Todos", areas: ["Saúde", "PcD"], valor: 900000, prazo: "2026-11-28", novo: true },
+  { id: "ED-06", empresa: "Mineradora Serra Azul", setor: "mineracao", nome: "Cuidar Juntos", areas: ["Saúde"], valor: 800000, prazo: "2026-12-05" },
+  { id: "ED-07", empresa: "Banco Aliança", setor: "banco", nome: "Infância Primeiro", areas: ["Infância"], valor: 1000000, prazo: "2026-12-12" },
+  { id: "ED-08", empresa: "Lojas Bem Viver", setor: "varejo", nome: "Idoso Ativo", areas: ["Pessoa idosa"], valor: 250000, prazo: "2026-12-19" },
+];
+EDITAIS.forEach(e => e.vinculos = []);
+
+const diasAte = iso => Math.round((new Date(iso + "T12:00:00") - new Date(HOJE + "T12:00:00")) / 86400000);
+const fmtValor = v => v >= 1e6 ? `R$ ${(v / 1e6).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mi` : `R$ ${fmt(Math.round(v / 1000))} mil`;
+const fmtDataLonga = iso => iso.split("-").reverse().join("/");
+const eFiltro = { areas: new Set(), prazo30: false };
+
+function editaisVisiveis() {
+  const q = $("eBusca").value.trim().toLowerCase();
+  const lista = EDITAIS.filter(e =>
+    diasAte(e.prazo) >= 0 &&
+    (!q || e.nome.toLowerCase().includes(q) || e.empresa.toLowerCase().includes(q)) &&
+    (!eFiltro.areas.size || e.areas.some(a => eFiltro.areas.has(a))) &&
+    (!eFiltro.prazo30 || diasAte(e.prazo) <= 30));
+  const ord = $("eOrdem").value;
+  return lista.sort((a, b) => ord === "valor" ? b.valor - a.valor : ord === "empresa" ? a.empresa.localeCompare(b.empresa, "pt-BR") : a.prazo.localeCompare(b.prazo));
+}
+
+function renderEditais() {
+  const lista = editaisVisiveis();
+  const total = lista.reduce((s, e) => s + e.valor, 0);
+  $("eResumo").textContent = `${lista.length} ${lista.length === 1 ? "edital" : "editais"} · ${fmtValor(total)} disponíveis`;
+  const nFiltros = eFiltro.areas.size + (eFiltro.prazo30 ? 1 : 0);
+  $("eFiltrosN").hidden = !nFiltros; $("eFiltrosN").textContent = nFiltros;
+
+  const ICO_ALERTA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3"/><path d="M12 9v4M12 17h.01"/></svg>';
+  const ICO_RELOGIO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  $("eBody").innerHTML = lista.length ? lista.map(e => {
+    const d = diasAte(e.prazo);
+    const quando = d === 0 ? "hoje" : d === 1 ? "amanhã" : `em ${d} dias`;
+    const prazo = d <= 15 ? `<span class="urgente">${ICO_ALERTA}${quando}</span>` : d <= 30 ? `<span class="atencao">${ICO_RELOGIO}${quando}</span>` : `<span>${quando}</span>`;
+    const n = e.vinculos.length;
+    return `<tr class="${e.novo ? "novo" : ""}">
+      <td><div class="emp"><span class="tile ${e.setor}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SETORES[e.setor]}</svg></span><b>${esc(e.empresa)}</b>${e.novo ? '<span class="tag-novo">NOVO</span>' : ""}</div></td>
+      <td>${esc(e.nome)}</td>
+      <td><span class="chip">${e.areas.map(esc).join(" · ")}</span></td>
+      <td class="valor">${fmtValor(e.valor)}</td>
+      <td class="prazo"><b>${fmtDataLonga(e.prazo)}</b>${prazo}</td>
+      <td style="text-align:right"><button class="btn-vincular ${n ? "feito" : ""}" data-vincular="${e.id}">${n ? `Vinculado (${n})` : "Vincular"}</button></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="6" class="tbl-empty">Nenhum edital aberto encontrado. Ajuste a busca ou os filtros.</td></tr>`;
+  $("eBody").querySelectorAll("[data-vincular]").forEach(b => b.addEventListener("click", () => abrirVinculo(b.dataset.vincular)));
+}
+
+// filtros
+function montarMenuFiltros() {
+  $("eFiltrosMenu").innerHTML = `<div class="menu-title">Área</div>
+    ${AREAS.map(a => `<label><input type="checkbox" data-area="${a}" ${eFiltro.areas.has(a) ? "checked" : ""}>${a}</label>`).join("")}
+    <hr><div class="menu-title">Prazo</div>
+    <label><input type="checkbox" id="ePrazo30" ${eFiltro.prazo30 ? "checked" : ""}>Inscrição nos próximos 30 dias</label>`;
+  $("eFiltrosMenu").querySelectorAll("[data-area]").forEach(i => i.addEventListener("change", () => { i.checked ? eFiltro.areas.add(i.dataset.area) : eFiltro.areas.delete(i.dataset.area); renderEditais(); }));
+  $("ePrazo30").addEventListener("change", e => { eFiltro.prazo30 = e.target.checked; renderEditais(); });
+}
+$("eFiltrosBtn").addEventListener("click", e => {
+  e.stopPropagation();
+  const m = $("eFiltrosMenu"); if (m.hidden) montarMenuFiltros();
+  m.hidden = !m.hidden; $("eFiltrosBtn").setAttribute("aria-expanded", !m.hidden);
+});
+document.addEventListener("click", e => { const m = $("eFiltrosMenu"); if (!m.hidden && !m.contains(e.target)) { m.hidden = true; $("eFiltrosBtn").setAttribute("aria-expanded", "false"); } });
+$("eBusca").addEventListener("input", renderEditais);
+$("eOrdem").addEventListener("change", renderEditais);
+
+// vincular instituições aptas a um edital
+function abrirVinculo(id) {
+  const ed = EDITAIS.find(e => e.id === id);
+  const aptas = INSTITUICOES.filter(r => r.ativo && r.municipio === municipio && situacao(r) === "apta");
+  const outras = INSTITUICOES.filter(r => r.ativo && r.municipio === municipio && situacao(r) !== "apta").length;
+  abrirPainel(`Vincular a ${ed.nome}`, `${esc(ed.empresa)} · ${fmtValor(ed.valor)} · inscrição até ${fmtDataLonga(ed.prazo)}`,
+    `<section class="sec"><h3>Instituições aptas em ${MUNICIPIOS[municipio].nome}</h3>
+      <p style="margin:0 0 12px;color:var(--fg-muted);font-size:14px">Marque as instituições que vão concorrer a este edital. ${outras ? `${outras} ${outras > 1 ? "instituições" : "instituição"} com pendência, em revisão ou não aptas ficam de fora.` : ""} Para outro município, troque o município no mapa.</p>
+      <div class="vinc-list">${aptas.map(r => `
+        <label class="vinc-item"><input type="checkbox" value="${r.id}" ${ed.vinculos.includes(r.id) ? "checked" : ""}>
+          <div><b>${esc(r.nome_instituicao)}</b><span>${esc(tipoTexto(r))} · ${esc(r.bairro)} · ${fmt(r.numero_pessoas_atendidas)} atendidos</span><span>Público: ${esc(r.publico_atendido)}</span></div>
+        </label>`).join("")}</div></section>`,
+    `<button class="btn-secondary" id="vCancelar">Cancelar</button><button class="btn-primary" id="vSalvar">Salvar vínculos</button>`);
+  const atualizar = () => { const n = $("drawerBody").querySelectorAll("input:checked").length; $("vSalvar").textContent = n ? `Vincular ${n} ${n > 1 ? "instituições" : "instituição"}` : "Salvar vínculos"; };
+  $("drawerBody").querySelectorAll("input").forEach(i => i.addEventListener("change", atualizar)); atualizar();
+  $("vCancelar").addEventListener("click", fecharPainel);
+  $("vSalvar").addEventListener("click", () => {
+    const outrosMun = ed.vinculos.filter(v => INSTITUICOES.find(r => r.id === v).municipio !== municipio);
+    ed.vinculos = [...outrosMun, ...[...$("drawerBody").querySelectorAll("input:checked")].map(i => i.value)];
+    fecharPainel(); renderEditais();
+    aviso(ed.vinculos.length ? `${ed.vinculos.length} ${ed.vinculos.length > 1 ? "instituições vinculadas" : "instituição vinculada"} a ${ed.nome}.` : `Nenhuma instituição vinculada a ${ed.nome}.`);
+  });
+}
+
+// importar edital (PDF ou link)
+function mostrarRevisao(origem, nomeSugerido) {
+  $("impInicio").hidden = true; $("impErr").hidden = true;
+  const r = $("impRevisao"); r.hidden = false;
+  r.innerHTML = `<form class="imp-form" id="impForm" novalidate>
+    <div class="arquivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>${esc(origem)}</div>
+    <div class="info-box">Na versão final, o sistema lê o edital e preenche estes campos. Nesta demonstração, só o nome é sugerido; complete e confira antes de salvar.</div>
+    <label class="field" data-f="i_empresa"><span>Empresa *</span><input type="text" id="i_empresa" placeholder="Ex.: Banco Horizonte"><span class="err" hidden></span></label>
+    <label class="field" data-f="i_nome"><span>Nome do edital *</span><input type="text" id="i_nome" value="${esc(nomeSugerido)}" placeholder="Ex.: Infância Primeiro"><span class="err" hidden></span></label>
+    <label class="field" data-f="i_area"><span>Área *</span><select id="i_area"><option value="">Selecione</option>${AREAS.map(a => `<option>${a}</option>`).join("")}</select><span class="err" hidden></span></label>
+    <label class="field" data-f="i_valor"><span>Valor disponível (R$) *</span><input type="number" id="i_valor" min="0" step="1000" inputmode="numeric" placeholder="Ex.: 500000"><span class="err" hidden></span></label>
+    <label class="field" data-f="i_prazo"><span>Inscrição até *</span><input type="date" id="i_prazo" min="${HOJE}"><span class="err" hidden></span></label>
+    <div class="actions"><button type="button" class="btn-secondary" id="impCancelar">Cancelar</button><button type="submit" class="btn-primary">Salvar edital</button></div>
+  </form>`;
+  $("impCancelar").addEventListener("click", voltarImport);
+  $("impForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const v = id => ($(id).value || "").trim();
+    const erros = {};
+    if (!v("i_empresa")) erros.i_empresa = "Informe a empresa.";
+    if (!v("i_nome")) erros.i_nome = "Informe o nome do edital.";
+    if (!v("i_area")) erros.i_area = "Selecione a área.";
+    if (!(+v("i_valor") > 0)) erros.i_valor = "Informe um valor maior que zero.";
+    if (!v("i_prazo") || v("i_prazo") < HOJE) erros.i_prazo = "Informe uma data a partir de hoje.";
+    $("impForm").querySelectorAll("[data-f]").forEach(f => { const m = erros[f.dataset.f], e = f.querySelector(".err"); f.classList.toggle("invalid", !!m); e.hidden = !m; e.textContent = m || ""; });
+    if (Object.keys(erros).length) return;
+    EDITAIS.forEach(e => e.novo = false);
+    EDITAIS.push({ id: `ED-${String(EDITAIS.length + 1).padStart(2, "0")}`, empresa: v("i_empresa"), setor: "outro", nome: v("i_nome"), areas: [v("i_area")], valor: +v("i_valor"), prazo: v("i_prazo"), novo: true, vinculos: [] });
+    voltarImport(); renderEditais();
+    aviso(`Edital ${v("i_nome")} salvo e marcado como novo.`);
+  });
+  $("i_empresa").focus();
+}
+function voltarImport() {
+  $("impRevisao").hidden = true; $("impRevisao").innerHTML = ""; $("impInicio").hidden = false;
+  $("impArquivo").value = ""; $("impLink").value = "";
+}
+function receberArquivo(f) {
+  if (!f) return;
+  if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") { $("impErr").textContent = "Envie o edital em PDF."; $("impErr").hidden = false; return; }
+  mostrarRevisao(f.name, f.name.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ").trim());
+}
+$("impArquivo").addEventListener("change", e => receberArquivo(e.target.files[0]));
+["dragenter", "dragover"].forEach(t => $("drop").addEventListener(t, e => { e.preventDefault(); $("drop").classList.add("over"); }));
+["dragleave", "drop"].forEach(t => $("drop").addEventListener(t, e => { e.preventDefault(); $("drop").classList.remove("over"); }));
+$("drop").addEventListener("drop", e => receberArquivo(e.dataTransfer.files[0]));
+$("impLinkForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const url = $("impLink").value.trim();
+  let ok = false; try { ok = /^https?:$/.test(new URL(url).protocol); } catch (er) {}
+  if (!ok) { $("impErr").textContent = "Cole um link completo, começando com http:// ou https://."; $("impErr").hidden = false; return; }
+  const ultimo = decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() || "");
+  mostrarRevisao(url, ultimo.replace(/\.(pdf|html?)$/i, "").replace(/[-_]+/g, " ").trim());
+});
+
 /* ---------- navegação entre seções ---------- */
 const VIEWS = {
   mapa: { el: "viewMapa", titulo: "Mapa de instituições aptas", crumbs: "Dashboard <span aria-hidden='true'>›</span> <b>Mapa de instituições aptas</b>" },
+  editais: { el: "viewEditais", titulo: "Editais captados", crumbs: "Dashboard <span aria-hidden='true'>›</span> <b>Editais captados</b>" },
   instituicoes: { el: "viewInstituicoes", titulo: "Instituições", crumbs: "Instituições registradas <span aria-hidden='true'>›</span> <b>Instituições</b>" },
 };
 function mostrarView(v) {
@@ -1426,7 +1746,7 @@ function mostrarView(v) {
   document.querySelectorAll("[data-view]").forEach(a => { if (a.dataset.view === v) a.setAttribute("aria-current", "page"); });
   $("pageTitle").textContent = VIEWS[v].titulo;
   $("crumbs").innerHTML = VIEWS[v].crumbs;
-  if (v === "instituicoes") renderTabela(); else posicionarPopup();
+  if (v === "instituicoes") renderTabela(); else if (v === "editais") renderEditais(); else posicionarPopup();
 }
 document.querySelectorAll("[data-view]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); history.replaceState(null, "", "#" + a.dataset.view); mostrarView(a.dataset.view); }));
 addEventListener("hashchange", () => mostrarView(location.hash.slice(1)));
